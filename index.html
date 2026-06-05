@@ -1,471 +1,693 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Basalt OS · 需求文档</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Basalt OS - 清算分账系统需求文档</title>
+  <style>
 :root {
-  --bg: #f9f7f4;
-  --bg-warm: #f5f2ed;
-  --surface: #ffffff;
-  --surface-hover: #fffdfb;
-  --border: #e8e3dc;
-  --border-light: #efe9e1;
-  --text: #2c2a26;
-  --text-secondary: #5c5a55;
-  --text-muted: #9c9a94;
+  --bg: #faf8f5;
+  --card: #ffffff;
+  --text: #2c2c2c;
+  --text-secondary: #6b6560;
   --accent: #c96442;
-  --accent-light: #f5ebe5;
-  --accent-hover: #b55838;
-  --shadow-sm: 0 1px 2px rgba(44,42,38,0.04);
-  --shadow-md: 0 2px 8px rgba(44,42,38,0.06);
-  --shadow-lg: 0 4px 20px rgba(44,42,38,0.08);
-  --radius: 12px;
-  --radius-sm: 8px;
+  --accent-light: #fdf0ea;
+  --border: #e8e2da;
+  --shadow: rgba(0,0,0,0.06);
+  --heading: #1a1715;
+  --code-bg: #1e1c1a;
+  --code-text: #e8ddd3;
+  --section-bg: #f3ede6;
+  --progress: #c96442;
+  --dot-active: #c96442;
+  --dot-inactive: #d4cdc5;
+  --transition: 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
-  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
 }
 
-/* ── Progress bar ── */
-#progress-bar {
-  position: fixed; top: 0; left: 0; height: 3px;
-  background: var(--accent); z-index: 9999;
-  transition: width 0.2s ease-out; width: 0%;
+/* Progress bar */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), #d98a6a);
+  z-index: 1000;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 8px rgba(201,100,66,0.3);
 }
 
-/* ── Navigation ── */
-#nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
-  padding: 14px 32px;
-  display: flex; align-items: center; justify-content: space-between;
-  background: rgba(249,247,244,0.85);
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid transparent;
-  transition: all 0.3s;
+/* Slide container */
+.slide-container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
 }
-#nav.scrolled {
-  border-bottom-color: var(--border-light);
-  box-shadow: var(--shadow-sm);
+
+.slide {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateX(60px);
+  transition: opacity var(--transition), transform var(--transition);
+  pointer-events: none;
+  padding: 40px;
+  overflow-y: auto;
 }
-.nav-brand {
-  display: flex; align-items: center; gap: 10px;
-  font-weight: 700; font-size: 17px; color: var(--text);
-  text-decoration: none; letter-spacing: -0.01em;
+
+.slide.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: all;
 }
-.nav-brand .logo {
-  width: 32px; height: 32px; border-radius: 8px;
-  background: var(--accent);
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 16px; font-weight: 800;
+
+.slide.exit-left {
+  opacity: 0;
+  transform: translateX(-60px);
 }
-.nav-links {
-  display: flex; gap: 2px; align-items: center; overflow-x: auto;
-  max-width: 70%; -ms-overflow-style: none; scrollbar-width: none;
+
+.slide-inner {
+  max-width: 1100px;
+  width: 100%;
 }
-.nav-links::-webkit-scrollbar { display: none; }
-.nav-link {
-  padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 500;
-  color: var(--text-muted); text-decoration: none;
-  transition: all 0.15s; white-space: nowrap;
+
+/* Cover slide */
+.slide.cover {
+  background: linear-gradient(135deg, #f9f5f0 0%, #f0e8de 50%, #e8ddd0 100%);
+}
+
+.cover-title {
+  font-size: 3.5em;
+  font-weight: 800;
+  color: var(--heading);
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+
+.cover-subtitle {
+  font-size: 1.4em;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 40px;
+}
+
+.cover-meta {
+  display: flex;
+  gap: 32px;
+  margin-top: 24px;
+}
+
+.cover-stat {
+  text-align: center;
+  padding: 20px 28px;
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px var(--shadow);
+  min-width: 140px;
+}
+
+.cover-stat .num {
+  font-size: 2.2em;
+  font-weight: 700;
+  color: var(--accent);
+  display: block;
+}
+
+.cover-stat .label {
+  font-size: 0.9em;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* Section divider slide */
+.slide.section-divider {
+  background: var(--section-bg);
+}
+
+.section-icon {
+  font-size: 3em;
+  margin-bottom: 16px;
+}
+
+.section-number {
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+
+.section-title {
+  font-size: 2.8em;
+  font-weight: 800;
+  color: var(--heading);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.section-subtitle {
+  font-size: 1.1em;
+  color: var(--text-secondary);
+  margin-top: 12px;
+}
+
+/* Content slide */
+.slide.content-slide {
+  justify-content: flex-start;
+  padding-top: 70px;
+}
+
+.slide-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border);
+}
+
+.slide-header .icon {
+  font-size: 1.8em;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-light);
+  border-radius: 10px;
   flex-shrink: 0;
 }
-.nav-link:hover { color: var(--text); background: rgba(0,0,0,0.03); }
-.nav-link.active { color: var(--text); background: var(--accent-light); font-weight: 600; }
 
-/* ── Hero ── */
-#hero {
-  min-height: 75vh; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  text-align: center; padding: 120px 24px 64px;
-}
-.hero-eyebrow {
-  display: inline-flex; align-items: center; gap: 8px;
-  color: var(--accent); padding: 6px 16px; border-radius: 100px;
-  font-size: 13px; font-weight: 600; margin-bottom: 24px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-}
-.hero-eyebrow .dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--accent);
-  animation: pulse 2s infinite;
-}
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-.hero-title {
-  font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800;
-  line-height: 1.1; margin-bottom: 20px;
-  color: var(--text); letter-spacing: -0.03em;
-}
-.hero-title span {
-  color: var(--accent);
-}
-.hero-desc {
-  font-size: clamp(0.95rem, 1.5vw, 1.1rem); color: var(--text-secondary);
-  max-width: 540px; line-height: 1.8; margin-bottom: 36px;
-}
-.hero-meta {
-  display: flex; gap: 32px; flex-wrap: wrap; justify-content: center;
-}
-.hero-meta-item {
-  text-align: center;
-}
-.hero-meta-item .val {
-  font-size: 1.8rem; font-weight: 800; color: var(--text);
-}
-.hero-meta-item .lab {
-  font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: 2px;
+.slide-header .title {
+  font-size: 1.6em;
+  font-weight: 700;
+  color: var(--heading);
 }
 
-/* ── Content ── */
-#content {
-  max-width: 820px; margin: 0 auto;
-  padding: 0 24px 120px;
-}
-
-/* ── Section hero (h1) ── */
-.section-hero {
-  margin: 64px 0 32px;
-}
-.section-hero .section-header {
-  display: flex; align-items: center; gap: 16px;
-  margin-bottom: 28px;
-}
-.section-hero .section-icon {
-  width: 48px; height: 48px; border-radius: 12px;
-  background: var(--accent-light);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 24px; flex-shrink: 0;
-  border: 1px solid var(--border-light);
-}
-.section-hero .section-number {
-  font-size: 12px; font-weight: 700; color: var(--accent);
-  letter-spacing: 0.08em;
-}
-.section-hero .section-title {
-  font-size: 1.7rem; font-weight: 800; color: var(--text);
-  letter-spacing: -0.02em; margin: 2px 0 0;
-}
-
-/* ── Section card (h2) ── */
-.section-card {
-  background: var(--surface);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius);
-  padding: 28px 32px;
-  margin: 28px 0;
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.25s;
-}
-.section-card:hover {
-  box-shadow: var(--shadow-md);
-}
-.section-card .section-header {
-  display: flex; align-items: center; gap: 14px;
-  margin-bottom: 20px; padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-light);
-}
-.section-card .section-icon {
-  width: 40px; height: 40px; border-radius: 10px;
-  background: var(--accent-light);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; flex-shrink: 0;
-}
-.section-card .section-number {
-  font-size: 11px; font-weight: 700; color: var(--accent);
-  letter-spacing: 0.08em;
-}
-.section-card .section-title {
-  font-size: 1.2rem; font-weight: 700; color: var(--text);
-  margin: 2px 0 0;
-}
-
-/* ── Section sub (h3+) ── */
-.section-sub {
-  margin: 20px 0;
-  padding-left: 16px;
-  border-left: 2px solid var(--border);
-}
-.section-sub .section-header { margin-bottom: 12px; }
-.section-sub .section-icon { display: none; }
-.section-sub .section-number {
-  font-size: 11px; font-weight: 600; color: var(--text-muted);
-}
-.section-sub .section-title {
-  font-size: 1.05rem; font-weight: 600; color: var(--text);
-  margin: 2px 0 0;
-}
-
-.section-body {
-  line-height: 1.85;
-}
-.section-body p {
-  margin: 12px 0; color: var(--text-secondary);
-}
-
-/* ── Intro block ── */
-.intro-block {
-  margin: 20px 0; padding: 20px 24px;
-  background: var(--surface);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-light);
-}
-
-/* ── Table ── */
-table {
-  width: 100%; border-collapse: separate; border-spacing: 0;
-  margin: 16px 0; font-size: 14px;
-  border-radius: var(--radius-sm); overflow: hidden;
-  border: 1px solid var(--border);
-}
-th {
-  background: var(--bg-warm); font-weight: 600;
-  padding: 10px 14px; text-align: left; font-size: 13px;
-  color: var(--text); border-bottom: 2px solid var(--border);
-}
-td {
-  padding: 9px 14px; border-bottom: 1px solid var(--border-light);
-  vertical-align: top; color: var(--text-secondary);
-}
-tr:last-child td { border-bottom: none; }
-tr:hover td { background: var(--accent-light); }
-
-/* ── Code ── */
-code {
-  font-family: 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
-  background: var(--bg-warm);
-  color: var(--accent);
-  padding: 2px 7px; border-radius: 5px;
-  font-size: 0.87em; font-weight: 500;
-  border: 1px solid var(--border-light);
-}
-pre {
-  background: #1c1917; color: #e7e5e4;
-  border-radius: var(--radius-sm); padding: 20px 24px;
-  margin: 16px 0; overflow-x: auto; font-size: 13.5px; line-height: 1.7;
-  border: 1px solid #292524;
-}
-pre code {
-  background: none; color: inherit; padding: 0;
-  border-radius: 0; border: none; font-weight: 400;
-}
-
-/* ── Blockquote ── */
-blockquote {
-  border-left: 3px solid var(--accent);
-  margin: 16px 0; padding: 12px 20px;
-  background: var(--accent-light);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+.slide-header .breadcrumb {
+  font-size: 0.82em;
   color: var(--text-secondary);
+  margin-top: 2px;
 }
 
-ul, ol { padding-left: 24px; margin: 10px 0; }
-li { margin: 5px 0; color: var(--text-secondary); }
-
-a { color: var(--accent); text-decoration: none; font-weight: 500; }
-a:hover { color: var(--accent-hover); text-decoration: underline; }
-
-strong { font-weight: 600; color: var(--text); }
-del { color: var(--text-muted); text-decoration: line-through; }
-
-hr {
-  border: none; height: 1px; margin: 40px 0;
-  background: var(--border-light);
+.slide-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 12px;
+  max-height: calc(100vh - 180px);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
-/* ── Reveal ── */
-.reveal {
-  opacity: 0; transform: translateY(16px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-.reveal.visible {
-  opacity: 1; transform: translateY(0);
+.slide-body::-webkit-scrollbar { width: 5px; }
+.slide-body::-webkit-scrollbar-track { background: transparent; }
+.slide-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Content typography */
+.slide-body p {
+  margin: 10px 0;
+  line-height: 1.85;
+  color: #444;
+  font-size: 15px;
 }
 
-/* ── Back to top ── */
-#back-to-top {
-  position: fixed; bottom: 28px; right: 28px;
-  width: 42px; height: 42px; border-radius: 10px;
-  background: var(--surface); color: var(--text);
+.slide-body ul, .slide-body ol {
+  padding-left: 22px;
+  margin: 8px 0;
+}
+
+.slide-body li {
+  margin: 5px 0;
+  line-height: 1.75;
+  color: #444;
+  font-size: 14.5px;
+}
+
+.slide-body li > ul, .slide-body li > ol {
+  margin: 4px 0;
+}
+
+.slide-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  border-radius: 8px;
+  overflow: hidden;
   border: 1px solid var(--border);
-  cursor: pointer; font-size: 18px; text-align: center; line-height: 42px;
-  box-shadow: var(--shadow-md);
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.25s, transform 0.25s;
-  z-index: 200;
-}
-#back-to-top.visible { opacity: 1; pointer-events: auto; }
-#back-to-top:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-
-/* ── Footer ── */
-#footer {
-  text-align: center; padding: 40px 24px 56px;
-  color: var(--text-muted); font-size: 13px;
-  border-top: 1px solid var(--border-light);
-  max-width: 820px; margin: 0 auto;
 }
 
-/* ── Responsive ── */
+.slide-body th {
+  background: #f3ede6;
+  font-weight: 600;
+  color: #3d3530;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 2px solid var(--border);
+  font-size: 13.5px;
+}
+
+.slide-body td {
+  padding: 8px 14px;
+  border-bottom: 1px solid #f0ebe4;
+  vertical-align: top;
+  font-size: 13.5px;
+}
+
+.slide-body tr:nth-child(even) td { background: #fdfcfa; }
+.slide-body tr:hover td { background: var(--accent-light); }
+
+.slide-body code {
+  font-family: "JetBrains Mono", "Fira Code", "SF Mono", Menlo, Consolas, monospace;
+  background: #f3ede6;
+  color: #9a4c2e;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 0.88em;
+  font-weight: 500;
+}
+
+.slide-body pre {
+  background: var(--code-bg);
+  color: var(--code-text);
+  border-radius: 10px;
+  padding: 18px 22px;
+  margin: 16px 0;
+  overflow-x: auto;
+  font-size: 13.5px;
+  line-height: 1.65;
+  border: 1px solid #2a2725;
+}
+
+.slide-body pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  font-weight: 400;
+}
+
+.slide-body blockquote {
+  border-left: 4px solid var(--accent);
+  margin: 14px 0;
+  padding: 10px 18px;
+  background: var(--accent-light);
+  border-radius: 0 8px 8px 0;
+  color: #5c4f45;
+  font-size: 14.5px;
+}
+
+.slide-body a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.slide-body a:hover {
+  border-bottom-color: var(--accent);
+}
+
+.slide-body strong {
+  font-weight: 600;
+  color: #2a2320;
+}
+
+.slide-body hr {
+  border: none;
+  height: 1px;
+  background: var(--border);
+  margin: 20px 0;
+}
+
+.slide-body del {
+  color: #aaa;
+  text-decoration: line-through;
+}
+
+/* Navigation */
+.nav-controls {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 100;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(12px);
+  padding: 8px 20px;
+  border-radius: 40px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  border: 1px solid var(--border);
+}
+
+.nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.slide-counter {
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-width: 60px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.dots {
+  display: flex;
+  gap: 6px;
+  max-width: 300px;
+  overflow: hidden;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dot-inactive);
+  transition: all 0.3s;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.dot.active {
+  background: var(--dot-active);
+  transform: scale(1.3);
+}
+
+.dot.section-dot {
+  background: var(--accent);
+  width: 9px;
+  height: 9px;
+  opacity: 0.4;
+}
+
+.dot.section-dot.active {
+  opacity: 1;
+  transform: scale(1.4);
+}
+
+/* Keyboard hint */
+.keyboard-hint {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: #bbb;
+  z-index: 100;
+  opacity: 1;
+  transition: opacity 1s;
+  pointer-events: none;
+}
+
+.keyboard-hint kbd {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #f0ebe4;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  font-size: 11px;
+  font-family: inherit;
+}
+
+/* Fullscreen button */
+.fullscreen-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(8px);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  z-index: 100;
+  transition: all 0.2s;
+}
+
+.fullscreen-btn:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* TOC slide */
+.toc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.toc-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.toc-item:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.toc-item .toc-icon {
+  font-size: 1.4em;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-light);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.toc-item .toc-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--heading);
+}
+
+/* Decorative elements */
+.deco-circle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+.deco-1 {
+  width: 400px; height: 400px;
+  background: var(--accent);
+  top: -100px; right: -100px;
+}
+
+.deco-2 {
+  width: 300px; height: 300px;
+  background: #8b6f5e;
+  bottom: -80px; left: -80px;
+}
+
+/* Mobile */
 @media (max-width: 768px) {
-  .nav-links { display: none; }
-  #hero { padding: 100px 16px 48px; min-height: 65vh; }
-  .hero-meta { gap: 20px; }
-  #content { padding: 0 16px 80px; }
-  .section-card { padding: 20px 18px; }
-  .section-hero .section-title { font-size: 1.3rem; }
+  .slide { padding: 20px; }
+  .cover-title { font-size: 2.2em; }
+  .section-title { font-size: 1.8em; }
+  .slide-header .title { font-size: 1.2em; }
+  .cover-meta { flex-wrap: wrap; gap: 12px; }
+  .cover-stat { min-width: 100px; padding: 14px; }
+  .toc-grid { grid-template-columns: 1fr 1fr; }
+  .slide-body { max-height: calc(100vh - 150px); }
+  .nav-controls { padding: 6px 14px; bottom: 16px; }
+  .dots { max-width: 150px; }
+}
+
+/* Print */
+@media print {
+  .slide { page-break-after: always; position: relative; height: auto; }
+  .nav-controls, .fullscreen-btn, .keyboard-hint, .progress-bar { display: none; }
 }
 </style>
 </head>
 <body>
+  <div class="progress-bar" style="width:0%"></div>
 
-<div id="progress-bar"></div>
-
-<nav id="nav">
-  <a href="#hero" class="nav-brand">
-    <div class="logo">B</div>
-    Basalt OS
-  </a>
-  <div class="nav-links">
-    <a href="#01_BasaltOS需求文档" data-anchor="01_BasaltOS需求文档" class="nav-link" style="padding-left:16px">01_Basalt OS需求文档</a>
-<a href="#清算分账" data-anchor="清算分账" class="nav-link" style="padding-left:16px">清算分账</a>
-<a href="#品牌专户" data-anchor="品牌专户" class="nav-link" style="padding-left:28px">品牌专户</a>
-<a href="#总部公司" data-anchor="总部公司" class="nav-link" style="padding-left:28px">总部公司</a>
-<a href="#区域公司" data-anchor="区域公司" class="nav-link" style="padding-left:28px">区域公司</a>
-<a href="#门店" data-anchor="门店" class="nav-link" style="padding-left:28px">门店</a>
-<a href="#供应商" data-anchor="供应商" class="nav-link" style="padding-left:28px">供应商</a>
-<a href="#清算订单三联" data-anchor="清算订单三联" class="nav-link" style="padding-left:28px">清算订单（三联）</a>
-<a href="#清算订单收钱吧" data-anchor="清算订单收钱吧" class="nav-link" style="padding-left:28px">清算订单（收钱吧）</a>
-<a href="#清算文件" data-anchor="清算文件" class="nav-link" style="padding-left:28px">清算文件</a>
-<a href="#清算批次" data-anchor="清算批次" class="nav-link" style="padding-left:28px">清算批次</a>
-<a href="#签约授权" data-anchor="签约授权" class="nav-link" style="padding-left:28px">签约授权</a>
-<a href="#付款" data-anchor="付款" class="nav-link" style="padding-left:28px">付款</a>
-<a href="#平台管理" data-anchor="平台管理" class="nav-link" style="padding-left:16px">平台管理</a>
-<a href="#区域划分" data-anchor="区域划分" class="nav-link" style="padding-left:28px">区域划分</a>
-<a href="#业务属性" data-anchor="业务属性" class="nav-link" style="padding-left:28px">业务属性</a>
-<a href="#角色" data-anchor="角色" class="nav-link" style="padding-left:28px">角色</a>
-<a href="#账户" data-anchor="账户" class="nav-link" style="padding-left:28px">账户</a>
-<a href="#全局规则" data-anchor="全局规则" class="nav-link" style="padding-left:16px">全局规则</a>
-<a href="#公司和门店编码生成规则" data-anchor="公司和门店编码生成规则" class="nav-link" style="padding-left:28px">公司和门店编码生成规则</a>
-<a href="#商户入驻状态" data-anchor="商户入驻状态" class="nav-link" style="padding-left:28px">商户入驻状态</a>
-<a href="#清算订单状态" data-anchor="清算订单状态" class="nav-link" style="padding-left:28px">清算订单状态</a>
-<a href="#清算批次号生成规则" data-anchor="清算批次号生成规则" class="nav-link" style="padding-left:28px">清算批次号生成规则</a>
-<a href="#清算文件状态" data-anchor="清算文件状态" class="nav-link" style="padding-left:28px">清算文件状态</a>
-<a href="#清算批次状态" data-anchor="清算批次状态" class="nav-link" style="padding-left:28px">清算批次状态</a>
-<a href="#系统流水号" data-anchor="系统流水号" class="nav-link" style="padding-left:28px">系统流水号</a>
-<a href="#协议代扣-3" data-anchor="协议代扣-3" class="nav-link" style="padding-left:28px">协议代扣</a>
-<a href="#授权代付-3" data-anchor="授权代付-3" class="nav-link" style="padding-left:28px">授权代付</a>
-<a href="#银行卡号和手机号脱敏规则" data-anchor="银行卡号和手机号脱敏规则" class="nav-link" style="padding-left:28px">银行卡号和手机号脱敏规则</a>
-<a href="#对外付款" data-anchor="对外付款" class="nav-link" style="padding-left:28px">对外付款</a>
-
-  </div>
-</nav>
-
-<section id="hero">
-  <div class="hero-eyebrow">
-    <span class="dot"></span>
-    清算分账管理系统
-  </div>
-  <h1 class="hero-title">Basalt OS<br><span>需求文档</span></h1>
-  <p class="hero-desc">零售行业清算分账管理系统的完整产品需求定义，涵盖品牌专户、清算订单、清算文件、清算批次、签约授权等核心模块。</p>
-  <div class="hero-meta">
-    <div class="hero-meta-item">
-      <div class="val">7+</div>
-      <div class="lab">核心模块</div>
+  <div class="slide-container">
+    <div class="slide cover" id="slide-0">
+              <div class="deco-circle deco-1"></div>
+<div class="slide section-divider" id="slide-toc">
+      <div class="deco-circle deco-1"></div>
+      <div class="deco-circle deco-2"></div>
+      <div class="slide-inner">
+        <div style="text-align:center;margin-bottom:24px">
+          <div class="section-icon">📑</div>
+          <div class="section-title">目录</div>
+          <div class="section-subtitle">点击跳转到对应章节</div>
+        </div>
+        <div class="toc-grid"><div class="toc-item" onclick="goSlide(1)">
+              <div class="toc-icon">📌</div>
+              <div class="toc-text">清算分账</div>
+            </div><div class="toc-item" onclick="goSlide(2)">
+              <div class="toc-icon">🏦</div>
+              <div class="toc-text">品牌专户</div>
+            </div><div class="toc-item" onclick="goSlide(11)">
+              <div class="toc-icon">🏪</div>
+              <div class="toc-text">门店</div>
+            </div><div class="toc-item" onclick="goSlide(15)">
+              <div class="toc-icon">📄</div>
+              <div class="toc-text">清算订单（三联）</div>
+            </div><div class="toc-item" onclick="goSlide(18)">
+              <div class="toc-icon">📁</div>
+              <div class="toc-text">清算文件</div>
+            </div><div class="toc-item" onclick="goSlide(19)">
+              <div class="toc-icon">📦</div>
+              <div class="toc-text">清算批次</div>
+            </div><div class="toc-item" onclick="goSlide(24)">
+              <div class="toc-icon">🔐</div>
+              <div class="toc-text">签约授权</div>
+            </div><div class="toc-item" onclick="goSlide(39)">
+              <div class="toc-icon">🌐</div>
+              <div class="toc-text">区域划分</div>
+            </div><div class="toc-item" onclick="goSlide(40)">
+              <div class="toc-icon">🏷️</div>
+              <div class="toc-text">业务属性</div>
+            </div><div class="toc-item" onclick="goSlide(41)">
+              <div class="toc-icon">👤</div>
+              <div class="toc-text">角色</div>
+            </div><div class="toc-item" onclick="goSlide(42)">
+              <div class="toc-icon">💳</div>
+              <div class="toc-text">账户</div>
+            </div><div class="toc-item" onclick="goSlide(47)">
+              <div class="toc-icon">🔄</div>
+              <div class="toc-text">商户入驻状态</div>
+            </div><div class="toc-item" onclick="goSlide(48)">
+              <div class="toc-icon">📄</div>
+              <div class="toc-text">清算订单状态</div>
+            </div><div class="toc-item" onclick="goSlide(50)">
+              <div class="toc-icon">📦</div>
+              <div class="toc-text">清算批次号生成规则</div>
+            </div><div class="toc-item" onclick="goSlide(51)">
+              <div class="toc-icon">📁</div>
+              <div class="toc-text">清算文件状态</div>
+            </div><div class="toc-item" onclick="goSlide(52)">
+              <div class="toc-icon">📦</div>
+              <div class="toc-text">清算批次状态</div>
+            </div><div class="toc-item" onclick="goSlide(53)">
+              <div class="toc-icon">🔢</div>
+              <div class="toc-text">系统流水号</div>
+            </div><div class="toc-item" onclick="goSlide(57)">
+              <div class="toc-icon">🔏</div>
+              <div class="toc-text">授权代付</div>
+            </div><div class="toc-item" onclick="goSlide(62)">
+              <div class="toc-icon">🔒</div>
+              <div class="toc-text">银行卡号和手机号脱敏规则</div>
+            </div></div>
+      </div>
     </div>
-    <div class="hero-meta-item">
-      <div class="val">4</div>
-      <div class="lab">版本迭代</div>
-    </div>
-    <div class="hero-meta-item">
-      <div class="val">50+</div>
-      <div class="lab">接口定义</div>
-    </div>
-  </div>
-</section>
 
-<div id="content">
-  
-<section id="01_BasaltOS需求文档" class="section-hero reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">01</span>
-      <h1 class="section-title">01_Basalt OS需求文档</h1>
-    </div>
-  </div>
-  <div class="section-body">
-    <p>术语表：<a href="https://bcno92iwldd2.feishu.cn/docx/YFAAdZmp8oeb9yxvjOYcTPeXn7b?from=from_copylink">Basalt_Finance - 术语对照表</a></p>
-  </div>
-</section>
-
-<section id="清算分账" class="section-hero reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">02</span>
-      <h1 class="section-title">清算分账</h1>
-    </div>
-  </div>
-  <div class="section-body">
-    <p>本文档需配合产品原型阅读。</p><p>原型：</p><ul>
-<li>
-<p>CoDesign：https://codesign.qq.com/s/671147766598162</p>
-</li>
-<li>
-<p>AxHub：https://axhub.im/ax9/71215a188e6b6ee5</p>
-</li>
-</ul><p>本文档仅描述产品原型中关键功能的逻辑和规则，详细功能列表、功能优先级、归属版本迭代等以<a href="https://bcno92iwldd2.feishu.cn/base/Okl3b4f5pavTIBsiUekcAUhQnzd?from=from_copylink">Basalt_Finance开发看板</a>为准。</p><p>包含版本迭代：版本与需求管理详见<a href="https://bcno92iwldd2.feishu.cn/base/Okl3b4f5pavTIBsiUekcAUhQnzd?from=from_copylink">Basalt_Finance开发看板</a></p><ul>
-<li>
-<p><code>0.5.0</code>开发中</p>
-</li>
-<li>
-<p><code>0.4.0</code>已完成</p>
-</li>
-<li>
-<p><code>0.2.0</code>已完成</p>
-</li>
-<li>
-<p><code>0.1.0</code>已完成</p>
-</li>
-</ul>
-  </div>
-</section>
-
-<section id="品牌专户" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">🏦</span>
-    <div>
-      <span class="section-number">03</span>
-      <h2 class="section-title">品牌专户</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <p>ISV名称：浙江可柔品牌管理有限公司</p><p>isvOrgId：202211000000000004381</p><p>AppId：2026042000004278</p>
-  </div>
-</section>
-
-<section id="品牌专户-2" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">🏦</span>
-    <div>
-      <span class="section-number">04</span>
-      <h3 class="section-title">品牌专户</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div style="font-size:3em;margin-bottom:20px">📋</div>
+                <div class="cover-title">Basalt OS</div>
+                <div class="cover-subtitle">清算分账系统需求文档</div>
+                <div class="cover-meta">
+                  <div class="cover-stat">
+                    <span class="num">19</span>
+                    <span class="label">核心模块</span>
+                  </div>
+                  <div class="cover-stat">
+                    <span class="num">48</span>
+                    <span class="label">功能页面</span>
+                  </div>
+                  <div class="cover-stat">
+                    <span class="num">68</span>
+                    <span class="label">幻灯片</span>
+                  </div>
+                </div>
+              </div>
+            </div><div class="slide section-divider" id="slide-1">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">📌</div>
+                <div class="section-number">Section 01</div>
+                <div class="section-title">清算分账</div>
+              </div>
+            </div><div class="slide section-divider" id="slide-2">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">🏦</div>
+                <div class="section-number">Section 02</div>
+                <div class="section-title">品牌专户</div>
+              </div>
+            </div><div class="slide content-slide" id="slide-3">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🏦</div>
+                  <div>
+                    <div class="title">品牌专户</div>
+                    <div class="breadcrumb">品牌专户</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>更新时间：数据更新时间，精确到秒，格式为「YYYY-MM-DD HH:mm:ss」。</p>
 <ol>
@@ -538,20 +760,18 @@ hr {
 <li>今日：当日清算完成的批次的清算金额总和。通过清算批次计算。</li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="来账明细" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">05</span>
-      <h3 class="section-title">来账明细</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-4">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">📋</div>
+                  <div>
+                    <div class="title">来账明细</div>
+                    <div class="breadcrumb">品牌专户</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>筛选</p>
 <ol>
@@ -619,33 +839,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="总部公司" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">🏢</span>
-    <div>
-      <span class="section-number">06</span>
-      <h2 class="section-title">总部公司</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    
-  </div>
-</section>
-
-<section id="总部公司-2" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">🏢</span>
-    <div>
-      <span class="section-number">07</span>
-      <h3 class="section-title">总部公司</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <h4 id="总部公司列表">总部公司列表</h4><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-5">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🏢</div>
+                  <div>
+                    <div class="title">总部公司列表</div>
+                    <div class="breadcrumb">品牌专户</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>筛选总部公司</p>
 <ol>
@@ -860,20 +1065,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="总部公司商户" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">🏢</span>
-    <div>
-      <span class="section-number">08</span>
-      <h3 class="section-title">总部公司商户</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <h4 id="总部公司商户列表">总部公司商户列表</h4><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-6">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🏢</div>
+                  <div>
+                    <div class="title">总部公司商户列表</div>
+                    <div class="breadcrumb">品牌专户</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>筛选商户</p>
 <ol>
@@ -1036,7 +1239,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol><h4 id="商户详情">商户详情</h4><h5 id="_11">资金账户：</h5><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-7">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🤝</div>
+                  <div>
+                    <div class="title">商户详情</div>
+                    <div class="breadcrumb">品牌专户</div>
+                  </div>
+                </div>
+                <div class="slide-body"><h5 id="_11">资金账户：</h5><ol>
 <li>
 <p>账户信息</p>
 <ol>
@@ -1357,33 +1571,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="区域公司" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">🏗️</span>
-    <div>
-      <span class="section-number">09</span>
-      <h2 class="section-title">区域公司</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    
-  </div>
-</section>
-
-<section id="区域公司-2" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">🏗️</span>
-    <div>
-      <span class="section-number">10</span>
-      <h3 class="section-title">区域公司</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-8">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🗺️</div>
+                  <div>
+                    <div class="title">区域公司</div>
+                    <div class="breadcrumb">品牌专户</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>筛选区域公司</p>
 <ol>
@@ -1637,20 +1836,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="区域公司商户" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">🏗️</span>
-    <div>
-      <span class="section-number">11</span>
-      <h3 class="section-title">区域公司商户</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <h4 id="区域公司商户列表">区域公司商户列表</h4><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-9">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🗺️</div>
+                  <div>
+                    <div class="title">区域公司商户列表</div>
+                    <div class="breadcrumb">品牌专户</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>筛选区域公司商户</p>
 <ol>
@@ -1781,7 +1978,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol><h4 id="商户详情-2">商户详情</h4><h5 id="_21">资金账户</h5><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-10">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🤝</div>
+                  <div>
+                    <div class="title">商户详情</div>
+                    <div class="breadcrumb">品牌专户</div>
+                  </div>
+                </div>
+                <div class="slide-body"><h5 id="_21">资金账户</h5><ol>
 <li>
 <p>账户信息</p>
 <ol>
@@ -2061,70 +2269,26 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="门店" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">🏪</span>
-    <div>
-      <span class="section-number">12</span>
-      <h2 class="section-title">门店</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
-<li>
-<p>门店数据初始化</p>
-<ol>
-<li>
-<p>门店基础数据从三联系统获取。</p>
-</li>
-<li>
-<p>三联系统中门店信息必填字段：门店名称。</p>
-</li>
-<li>
-<p>门店编码生成规则见「<a href="https://bcno92iwldd2.feishu.cn/docx/D94yd819ooLBAuxVmP9cMpcLnHd?from=from_copylink">00_Basalt_Finance 总部公司/区域公司/门店 编码生成规则</a>」。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>门店数据获取与更新：</p>
-<ol>
-<li>
-<p>如需修改门店基础信息，用户须前往三联系统修改，然后在本系统中更新门店信息。</p>
-</li>
-<li>
-<p>定时更新：每日凌晨3:00，增量更新全部门店（含新建门店）信息。</p>
-</li>
-<li>
-<p>手动更新：</p>
-<ol>
-<li>
-<p>拉取新建门店：如用户在三联系统中新建了门店后需在本系统立即同步的，可点击操作区域的「拉取新门店」按钮立即增量拉取新建门店信息。</p>
-</li>
-<li>
-<p>更新门店信息：如用户在三联系统中修改了门店信息后需在本系统立即同步的，可在门店列表勾选需更新的门店后点击批量操作区域的「更新门店信息」按钮立即更新门店信息。</p>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-  </div>
-</section>
-
-<section id="门店列表" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">🏪</span>
-    <div>
-      <span class="section-number">13</span>
-      <h3 class="section-title">门店列表</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide section-divider" id="slide-11">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">🏪</div>
+                <div class="section-number">Section 03</div>
+                <div class="section-title">门店</div>
+              </div>
+            </div><div class="slide content-slide" id="slide-12">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🏪</div>
+                  <div>
+                    <div class="title">门店列表</div>
+                    <div class="breadcrumb">门店</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>筛选门店</p>
 <ol>
@@ -2323,20 +2487,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="门店商户" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">🏪</span>
-    <div>
-      <span class="section-number">14</span>
-      <h3 class="section-title">门店商户</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <h4 id="门店商户列表">门店商户列表</h4><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-13">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🏪</div>
+                  <div>
+                    <div class="title">门店商户列表</div>
+                    <div class="breadcrumb">门店</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>筛选商户</p>
 <ol>
@@ -2470,7 +2632,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol><h4 id="商户详情-3">商户详情</h4><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-14">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🤝</div>
+                  <div>
+                    <div class="title">商户详情</div>
+                    <div class="breadcrumb">门店</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>资金账户：</p>
 <ol>
@@ -2757,399 +2930,26 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="供应商" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">🚚</span>
-    <div>
-      <span class="section-number">15</span>
-      <h2 class="section-title">供应商</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    
-  </div>
-</section>
-
-<section id="清算订单三联" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">📄</span>
-    <div>
-      <span class="section-number">16</span>
-      <h2 class="section-title">清算订单（三联）</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
-<li>
-<p>根据网商银行接口要求，清算订单只需要到订单级别的数据，即不需要订单中具体的sku信息，故本功能中的订单信息不包含三联订单中的sku信息。</p>
-</li>
-<li>
-<p>清算订单原始数据来源于三联ERP系统。</p>
-<ol>
-<li>接口：零售单查询(open.saleorder.query)</li>
-</ol>
-</li>
-<li>
-<p>拉取订单</p>
-<ol>
-<li>
-<p>自动拉取：系统每天凌晨3点从三联系统拉取D-1全量订单。</p>
-</li>
-<li>
-<p>手动拉取：点击「拉取订单」按钮，从三联系统拉取截至操作时间的增量订单。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>筛选清算订单</p>
-<ol>
-<li>
-<p>支付时间：对应列表中的支付时间列，提供近60天，近30天，近7天，昨天，今天，快捷筛选，也支持通过下拉日期自定义时间段筛选。</p>
-</li>
-<li>
-<p>批次号：对应列表中的批次号列，文本框输入，支持关键词筛选（非完全匹配）。</p>
-</li>
-<li>
-<p>订单编号：对应列表中的订单编号列，文本框输入，支持关键词筛选（非完全匹配）。</p>
-</li>
-<li>
-<p>门店名称：对应列表中的门店名称列，文本框输入，支持关键词筛选（非完全匹配）。</p>
-</li>
-<li>
-<p>门店编码：列表中未展示，匹配系统生成的门店编码，文本框输入，支持关键词筛选（非完全匹配）。</p>
-</li>
-<li>
-<p>状态：对应列表中的状态列，下拉选择。全部状态见<a href="https://bcno92iwldd2.feishu.cn/docx/P4eedyyrhoWE5HxC1AtcCPvtnWc#share-CHDAdn7HBo8stoxUoulcWIc0nQe">订单清算状态</a>。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>订单操作</p>
-<ol>
-<li>
-<p>拉取订单：点击后调用三联ERP<code>零售单查询(open.saleorder.query)</code>接口拉取截至操作时间的增量订单。</p>
-<ol>
-<li>异步处理，toast提示：「正在拉取订单，稍后可刷新列表查看。」</li>
-</ol>
-</li>
-<li>
-<p>上送订单：</p>
-<ol>
-<li>
-<p>用户需先筛选「未上送」状态的订单，然后在列表中勾选，勾选后点击该按钮继续操作。</p>
-</li>
-<li>
-<p>上送：调用网商银行<code>补单创单接口&lt; ant.mybank.bkcloudfunds.bill.pay&gt;</code> 执行订单上送操作。</p>
-</li>
-<li>
-<p>如未勾选任何订单：toast提示：「请先选择未上送的订单，然后再执行当前操作。」</p>
-</li>
-<li>
-<p>如勾选订单中包含非「未上送」状态的订单：弹窗提醒。</p>
-<ol>
-<li>
-<p>弹窗内容</p>
-<ol>
-<li>
-<p>已选择的订单中包含非「未上送」状态的订单。</p>
-</li>
-<li>
-<p>点击「重新选择」按钮可重新选择订单。</p>
-</li>
-<li>
-<p>点击「继续上送」按钮将过滤已上送订单，仅对未上送订单执行上送操作。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>操作</p>
-<ol>
-<li>
-<p>重新选择：关闭弹窗，不刷新页面（保留列表中订单的已选择状态）。</p>
-</li>
-<li>
-<p>继续上送：系统依次执行以下动作：</p>
-<ol>
-<li>
-<p>对已选择订单中状态非「未上送」的订单进行过滤，</p>
-</li>
-<li>
-<p>仅对状态为「未上送」的订单按补单文件的要求生成补单文件（交易明细文件）。</p>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-<li>
-<p>如用户勾选订单无异常（仅包含「未上送」订单），弹窗提示：</p>
-<ol>
-<li>弹窗内容：「订单上送将在后台执行，稍后可刷新列表查看上送状态。」</li>
-</ol>
-</li>
-</ol>
-</li>
-<li>
-<p>生成清算文件：</p>
-<ol>
-<li>
-<p>用户需先筛选「已上送」状态，但批次号不为「-」的订单，然后在列表中勾选，勾选后点击该按钮继续操作。</p>
-</li>
-<li>
-<p>清算文件生成时系统根据<a href="https://bcno92iwldd2.feishu.cn/docx/P4eedyyrhoWE5HxC1AtcCPvtnWc#share-GC42d6OFLo2zkpxcOErcepauncd">规则</a>生成批次号。</p>
-</li>
-<li>
-<p>如未勾选任何订单：toast提示：「请先选择已上送的订单，然后再执行当前操作。」</p>
-</li>
-<li>
-<p>如勾选订单中包含非「已上送」状态的订单，但不包含批次号不为「-」的订单，弹窗提醒：</p>
-<ol>
-<li>
-<p>弹窗内容：</p>
-<ol>
-<li>
-<p>已选择的订单中包含未上送的订单。</p>
-</li>
-<li>
-<p>点击「重新选择」按钮可重新选择订单； </p>
-</li>
-<li>
-<p>点击「继续生成」按钮系统将对未上送订单执行上送操作后继续生成清算文件。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>操作：</p>
-<ol>
-<li>
-<p>重新选择：关闭弹窗，不刷新页面（保留列表中订单的已选择状态）。</p>
-</li>
-<li>
-<p>继续生成：系统依次执行以下动作：</p>
-<ol>
-<li>
-<p>对已选择订单中「未上送」状态的订单调用网商银行<code>补单创单接口&lt; ant.mybank.bkcloudfunds.bill.pay&gt;</code> 执行订单上送操作。</p>
-</li>
-<li>
-<p>上送成功后再按补单文件的要求对本次选择的所有订单生成补单文件（交易明细文件）。</p>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-<li>
-<p>如勾选订单中不包含非「已上送」状态的订单，但包含批次号不为「-」的订单，弹窗提醒：</p>
-<ol>
-<li>
-<p>弹窗内容：</p>
-<ol>
-<li>
-<p>已选择的订单中包含已有清算批次的订单。</p>
-</li>
-<li>
-<p>点击「重新选择」按钮可重新选择订单；</p>
-</li>
-<li>
-<p>点击「继续生成」按钮系统将过滤已有批次号的订单，仅对批次号为「-」的订单，继续生成清算文件。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>操作：</p>
-<ol>
-<li>
-<p>重新选择：关闭弹窗，不刷新页面（保留列表中订单的已选择状态）。</p>
-</li>
-<li>
-<p>继续生成：系统依次执行以下动作：</p>
-<ol>
-<li>
-<p>对已选择订单中批次号不为「-」的订单进行过滤，</p>
-</li>
-<li>
-<p>仅对批次号为「-」的订单按补单文件的要求生成补单文件（交易明细文件）。</p>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-<li>
-<p>如勾选订单中既包含非「已上送」状态的订单，也包含批次号不为「-」的订单，弹窗提醒：</p>
-<ol>
-<li>
-<p>弹窗内容：</p>
-<ol>
-<li>
-<p>已选择的订单中包含未上送的订单。</p>
-</li>
-<li>
-<p>已选择的订单中包含已有清算批次的订单。</p>
-</li>
-<li>
-<p>点击「重新选择」按钮可重新选择订单；</p>
-</li>
-<li>
-<p>点击「继续生成」按钮系统将对未上送订单执行上送操作，并过滤已有批次号的订单，仅对批次号为「-」的订单执行上送操作后继续生成清算文件。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>操作：</p>
-<ol>
-<li>
-<p>重新选择：关闭弹窗，不刷新页面（保留列表中订单的已选择状态）。</p>
-</li>
-<li>
-<p>继续生成：系统依次执行以下动作：</p>
-<ol>
-<li>
-<p>对已选择订单中「未上送」状态的订单调用网商银行<code>补单创单接口&lt; ant.mybank.bkcloudfunds.bill.pay&gt;</code> 执行订单上送操作。</p>
-</li>
-<li>
-<p>对已选择订单中批次号不为「-」的订单进行过滤，</p>
-</li>
-<li>
-<p>上送成功后，对批次号为「-」的订单按补单文件的要求生成补单文件（交易明细文件）。</p>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-<li>
-<p>如勾选订单无异常（仅包含「已上送」订单）：弹窗提示。</p>
-<ol>
-<li>
-<p>弹窗内容：「清算文件将在后台生成，稍后可前往「清算文件」查看。」</p>
-</li>
-<li>
-<p>其中「清算文件」用蓝色字体路由至「清算文件」页面。</p>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-<li>
-<p>订单列表：</p>
-<p>用到2个外部接口：</p>
-<ol>
-<li>
-<p>三联：<code>零售单查询(open.saleorder.query)</code></p>
-</li>
-<li>
-<p>网商：<code>补单创单接口&lt; ant.mybank.bkcloudfunds.bill.pay&gt;</code></p>
-</li>
-<li>
-<p>订单编号：三联系统中的订单编号<code>{OrderID}</code>。</p>
-</li>
-<li>
-<p>实收金额（元）：三联系统中的订单实收金额<code>{Totalmoney_AV}</code>。</p>
-</li>
-<li>
-<p>付款方式：三联系统中的付款方式<code>{PaymentMName}</code>。</p>
-</li>
-<li>
-<p>渠道类型：本系统定义字段，0：门店订单，1：微信小程序订单。当前三联系统订单全部为门店订单，为未来支持微信小程序订单预留。</p>
-</li>
-<li>
-<p>门店名称：三联系统中的门店名称<code>{GfromID}</code>。</p>
-</li>
-<li>
-<p>支付时间：三联系统中的下单时间<code>{d_id}</code>。</p>
-</li>
-<li>
-<p>清算状态：本系统定义字段。全部状态见<a href="https://bcno92iwldd2.feishu.cn/docx/P4eedyyrhoWE5HxC1AtcCPvtnWc#share-CHDAdn7HBo8stoxUoulcWIc0nQe">订单清算状态</a>。</p>
-</li>
-<li>
-<p>上送失败原因：上送失败时展示</p>
-</li>
-<li>
-<p>清算失败原因：清算失败时展示</p>
-</li>
-<li>
-<p>网商订单号：订单上送成功后网商返回该字段<code>{OrderNo}</code>。未上送订单无该值。</p>
-</li>
-<li>
-<p>批次号：生成清算文件后产生。</p>
-</li>
-<li>
-<p>操作：根据订单状态，不同状态的订单对应有不同的操作</p>
-<ol>
-<li>
-<p>未上送：上送，点击后调用网商<code>补单创单接口&lt; ant.mybank.bkcloudfunds.bill.pay&gt;</code>上送订单信息。</p>
-</li>
-<li>
-<p>上送失败：上送，点击后调用网商<code>补单创单接口&lt; ant.mybank.bkcloudfunds.bill.pay&gt;</code>上送订单信息。</p>
-</li>
-<li>
-<p>已上送：-</p>
-</li>
-<li>
-<p>清算中：-</p>
-</li>
-<li>
-<p>清算成功：-</p>
-</li>
-<li>
-<p>清算失败：-</p>
-</li>
-</ol>
-</li>
-<li>
-<p>操作说明</p>
-<ol>
-<li>
-<p>上送：点击后调用网商<code>补单创单接口&lt; ant.mybank.bkcloudfunds.bill.pay&gt;</code>上送订单信息。</p>
-</li>
-<li>
-<p>上送成功：toast提示：订单上送成功，请刷新列表查看。</p>
-</li>
-<li>
-<p>上送失败：订单上送失败，请稍后重试。</p>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-  </div>
-</section>
-
-<section id="清算订单收钱吧" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">📄</span>
-    <div>
-      <span class="section-number">17</span>
-      <h2 class="section-title">清算订单（收钱吧）</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    
-  </div>
-</section>
-
-<section id="清算订单" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">📄</span>
-    <div>
-      <span class="section-number">18</span>
-      <h3 class="section-title">清算订单</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide section-divider" id="slide-15">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">📄</div>
+                <div class="section-number">Section 04</div>
+                <div class="section-title">清算订单（三联）</div>
+              </div>
+            </div><div class="slide content-slide" id="slide-16">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">📄</div>
+                  <div>
+                    <div class="title">清算订单</div>
+                    <div class="breadcrumb">清算订单（三联）</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>根据网商银行接口要求，清算订单只需要到订单级别的数据，即不需要订单中具体的sku信息，故本功能中的订单信息不包含三联订单中的sku信息。</p>
 </li>
@@ -3693,20 +3493,18 @@ hr {
 <td></td>
 </tr>
 </tbody>
-</table>
-  </div>
-</section>
-
-<section id="POS设置" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">19</span>
-      <h3 class="section-title">POS设置</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</table></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-17">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🖥️</div>
+                  <div>
+                    <div class="title">POS设置</div>
+                    <div class="breadcrumb">清算订单（三联）</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>POS机数据（列表）从收钱吧推送的对账单中获取，不提供手动添加的方式。</p>
 </li>
@@ -4038,409 +3836,34 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="清算文件" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">📁</span>
-    <div>
-      <span class="section-number">20</span>
-      <h2 class="section-title">清算文件</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
-<li>
-<p>清算文件在网商系统中也被称为「补单文件」，或「交易明细文件」。</p>
-</li>
-<li>
-<p>清算文件的作用：前述步骤已经完成了零售订单上送给网商，清算文件中补充参与清算的商户信息，后面按批次清算时则按照该文件中的商户进行清算。</p>
-</li>
-<li>
-<p>清算文件的产生：清算文件通过「清算订单」功能中的「生成清算文件」按钮生成。文件名称用清算批次号。</p>
-</li>
-<li>
-<p>清算文件上传路径：upload/${isvOrgId}/${acquireId}/${batchNo}/merchant_trade_detail_${batchNo}.txt</p>
-</li>
-<li>
-<p>标档文件上传路径：/upload/${isvOrgId}/${acquireId}/${batchNo}/finish_${batchNo}.txt</p>
-</li>
-<li>
-<p>⚠️ 每天最多上传 50 次清算文件。</p>
-</li>
-<li>
-<p>筛选清算文件</p>
-<ol>
-<li>
-<p>上传时间：对应列表中的上传时间列，提供近60天，近30天，近7天，昨天，今天，快捷筛选，也支持通过下拉日期自定义时间段筛选。</p>
-</li>
-<li>
-<p>批次号：对应列表中的批次号列，文本框输入，支持关键词筛选（非完全匹配）。</p>
-</li>
-<li>
-<p>订单编号：对应列表中的订单编号列，文本框输入，支持关键词筛选（非完全匹配）。</p>
-</li>
-<li>
-<p>状态：对应列表中的上送状态列，下拉选择，全部状态见<a href="https://bcno92iwldd2.feishu.cn/docx/P4eedyyrhoWE5HxC1AtcCPvtnWc#share-LzzMdlvQfoE9hkxIR0OcreKlntd">清算文件状态</a>。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>操作</p>
-<ol>
-<li>无</li>
-</ol>
-</li>
-<li>
-<p>清算文件列表</p>
-<ol>
-<li>
-<p>批次号：系统生成的清算批次号，批次号生成规则详见<a href="https://bcno92iwldd2.feishu.cn/docx/P4eedyyrhoWE5HxC1AtcCPvtnWc#share-FrbjdJkmWoZhGMxVhpHc8jSJnmj">清算批次号生成规则</a>。</p>
-</li>
-<li>
-<p>交易总金额：该清算文件中<code>全部支付订单的交易总金额</code>减去<code>全部退款订单的交易总金额</code>。</p>
-</li>
-<li>
-<p>实际金额：该清算文件中<code>全部支付订单的实际金额</code>减去<code>全部退款订单的实际金额</code>。</p>
-</li>
-<li>
-<p>渠道手续费：该清算文件中<code>全部支付订单的渠道手续费金额</code>减去<code>全部退款订单的渠道手续费金额</code>。</p>
-</li>
-<li>
-<p>状态：清算文件的状态，详细状态定义及状态变更见<a href="https://bcno92iwldd2.feishu.cn/docx/P4eedyyrhoWE5HxC1AtcCPvtnWc#share-LzzMdlvQfoE9hkxIR0OcreKlntd">清算文件状态</a>。</p>
-</li>
-<li>
-<p>上传时间：文件上传至网商的时间.</p>
-</li>
-<li>
-<p>操作：根据清算文件状态，不同状态的清算文件对应有不同的操作。</p>
-<ol>
-<li>
-<p>待上传：上传，作废，详情</p>
-</li>
-<li>
-<p>已作废：详情</p>
-</li>
-<li>
-<p>上传失败：上传，作废，详情</p>
-</li>
-<li>
-<p>已上传：撤回，新建批次，详情</p>
-</li>
-<li>
-<p>已撤回：上传，作废，详情</p>
-</li>
-<li>
-<p>待上报：查看批次，详情</p>
-</li>
-<li>
-<p>上报失败：查看批次，详情</p>
-</li>
-<li>
-<p>清算中：查看批次，详情</p>
-</li>
-<li>
-<p>清算成功：查看批次，详情</p>
-</li>
-<li>
-<p>部分成功：查看批次，详情</p>
-</li>
-<li>
-<p>清算失败：查看批次，详情</p>
-</li>
-</ol>
-</li>
-<li>
-<p>操作说明：</p>
-<ol>
-<li>
-<p>上传：点击后系统依次上传清算文件和同名标档文件。两个文件都上传成功时才视为清算文件上传成功，有一个失败则视为清算文件上传失败。</p>
-<ol>
-<li>
-<p>上传成功：toaster提示：清算文件上传成功，请刷新列表查看。。</p>
-</li>
-<li>
-<p>上传失败：toaster提示：清算文件上传失败，请稍后重试。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>撤回：点击后从网商ftp服务器撤回该文件。</p>
-<ol>
-<li>
-<p>撤回成功：toaster提示：清算文件撤回成功，请刷新列表查看。。</p>
-</li>
-<li>
-<p>撤回失败：toaster提示：清算文件撤回失败，请稍后重试。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>作废：点击展示作废确认弹窗。</p>
-<ol>
-<li>
-<p>弹窗内容：</p>
-<p>作废操作不可撤销，请谨慎操作，作废后：</p>
-<ul>
-<li>
-<p>该清算文件将不可再编辑，不可上传。</p>
-</li>
-<li>
-<p>批次内的所有订单将变更为已上送状态，需要重新生成清算文件方可发起清算。</p>
-</li>
-</ul>
-</li>
-<li>
-<p>取消：点击后弹窗消失，回到清算文件列表，清算文件状态不变。</p>
-</li>
-<li>
-<p>确定：点击后执行作废操作，执行成功后弹窗内容变更为「清算文件已作废，请刷新列表查看。」，清算文件状态变更为「已作废」状态，，批次内所有订单变更为「已上送」状态。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>新建批次：点击后跳转至新建批次页面。</p>
-</li>
-<li>
-<p>查看批次：点击后跳转至批次详情页面。</p>
-</li>
-<li>
-<p>详情：点击后跳转至清算文件详情页面。</p>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-<li>
-<p>清算文件详情</p>
-<ol>
-<li>
-<p>查询</p>
-<ol>
-<li>
-<p>支付时间：对应列表中的创单时间，通过下拉日期自定义时间段筛选。</p>
-</li>
-<li>
-<p>订单编号：对应列表中的isv支付单号列，文本框输入，支持关键词筛选（非完全匹配）。</p>
-</li>
-<li>
-<p>门店名称：对应列表中的门店名称列，文本框输入，支持关键词筛选（非完全匹配）。</p>
-</li>
-<li>
-<p>门店编码：列表中未展示，按订单跟门店的归属关系，匹配系统生成的门店编码，文本框输入，支持关键词筛选（非完全匹配）。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>交易明细文件规范</p>
-<table>
-<thead>
-<tr>
-<th>字段</th>
-<th>名字</th>
-<th>举例</th>
-<th>备注</th>
-<th>说明/固定值/规则</th>
-<th>传值</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>channel_type<br/></td>
-<td>渠道类型<br/></td>
-<td>WXPAY<br/>        ALIPAY</td>
-<td></td>
-<td>渠道为：收钱吧<br/></td>
-<td>固定传值 <code>Shouqianba_pay</code><br/></td>
-</tr>
-<tr>
-<td>trade_type</td>
-<td>交易类型</td>
-<td>SINGLE_PAY 支付明细<br/>        REFUND 退款明细</td>
-<td>支付订单和退款订单通过该字段区分，后面的金额一律传入正值</td>
-<td>根据收钱吧对账单<code>交易类型/交易模式</code>判断：<br/>        付款：SINGLE_PAY<br/>        退款：REFUND</td>
-<td>SINGLE_PAY：支付明细<br/>        REFUND：退款明细</td>
-</tr>
-<tr>
-<td>batch_no</td>
-<td>批次号</td>
-<td></td>
-<td>标准支付渠道发生的交易对应批次由系统自动生成，批次号是YYYYMMDD日期格式； <br/>        ISV自主创建的批次，批次号由ISV负责，保证不重复即可；</td>
-<td>标记清算批次，与清算批次号严格对应<br/></td>
-<td><a href="https://bcno92iwldd2.feishu.cn/docx/P4eedyyrhoWE5HxC1AtcCPvtnWc#share-FrbjdJkmWoZhGMxVhpHc8jSJnmj">清算批次号生成规则</a><br/></td>
-</tr>
-<tr>
-<td>recon_dt</td>
-<td>对账日</td>
-<td>20190501</td>
-<td></td>
-<td>订单实际收银日期</td>
-<td>收钱吧<code>｛交易日期｝</code></td>
-</tr>
-<tr>
-<td>mybank_order_no</td>
-<td>网商订单号</td>
-<td></td>
-<td>标准支付渠道发生的交易，填写支付成功补单创单返回的网商订单号；</td>
-<td>补单创单成功后由网商返回</td>
-<td>网商<code>{OrderNo}</code></td>
-</tr>
-<tr>
-<td>out_trade_no</td>
-<td>isv支付单号</td>
-<td></td>
-<td>标准支付渠道发生的交易，填写补单创单的isv预下单的外部单号；</td>
-<td>ISV侧自有订单号</td>
-<td>收钱吧<code>｛商户订单号｝</code></td>
-</tr>
-<tr>
-<td>channel_trade_no</td>
-<td>渠道支付单号</td>
-<td></td>
-<td>标准支付渠道发生的交易，写三方支付返回的支付单号；</td>
-<td>渠道侧交易单号</td>
-<td></td>
-</tr>
-<tr>
-<td>out_refund_no</td>
-<td>isv退款单号</td>
-<td></td>
-<td>【退款时填】<br/>        标准支付渠道发生的交易，写isv退款的外部单号；</td>
-<td>ISV侧自有退款单号<br/></td>
-<td>收钱吧<code>｛商户订单号｝</code><br/></td>
-</tr>
-<tr>
-<td>channel_refund_no</td>
-<td>渠道退款单号</td>
-<td></td>
-<td>【退款时填】<br/>        标准支付渠道发生的交易，写三方支付返回的退款单号；</td>
-<td>渠道侧退款单号<br/></td>
-<td><br/></td>
-</tr>
-<tr>
-<td>trade_amount</td>
-<td>交易总金额<br/></td>
-<td>1.52</td>
-<td>单位（元）支付/退款总金额；<br/>        【金额一律传入正值，通过trade_type区分支付和退款方向】</td>
-<td>订单总金额 = 实际金额 + 渠道手续费</td>
-<td>收钱吧<code>收款金额</code></td>
-</tr>
-<tr>
-<td>actual_amount</td>
-<td>实际金额</td>
-<td>1.50<br/></td>
-<td>单位（元），精确到分<br/>        实收/实退金额<br/>        【金额一律传入正值，通过trade_type区分支付和退款方向】</td>
-<td>订单实收金额<br/></td>
-<td>收钱吧<code>结算金额</code></td>
-</tr>
-<tr>
-<td>channel_fee_amount</td>
-<td>渠道手续费</td>
-<td></td>
-<td>支付为渠道收费，退款为渠道退费<br/>        【金额一律传入正值，通过trade_type区分支付和退款方向】</td>
-<td>收钱吧收取的服务费<br/></td>
-<td>收钱吧<code>支付手续费</code>+<code>技术服务费</code><br/></td>
-</tr>
-<tr>
-<td>ccy</td>
-<td>币种</td>
-<td>156</td>
-<td></td>
-<td>币种标识字段</td>
-<td>156</td>
-</tr>
-<tr>
-<td>user_id</td>
-<td>用户标识</td>
-<td></td>
-<td>填写渠道侧返回的用户标识</td>
-<td>用户唯一标识</td>
-<td>收钱吧<code>付款账户</code></td>
-</tr>
-<tr>
-<td>merchant_id</td>
-<td>商户号</td>
-<td></td>
-<td>商户号</td>
-<td>网商商户号（门店编码，外部商户号，网商商户号1:1:1对应）</td>
-<td>网商{MerchantId}<br/></td>
-</tr>
-<tr>
-<td>status</td>
-<td>交易状态</td>
-<td>SUCCESS</td>
-<td></td>
-<td>交易状态标识</td>
-<td>SUCCESS</td>
-</tr>
-<tr>
-<td>remark</td>
-<td>备注</td>
-<td></td>
-<td></td>
-<td>备注说明信息</td>
-<td><code>{店铺名称}</code>- 订单</td>
-</tr>
-<tr>
-<td>create_time</td>
-<td>创单时间</td>
-<td>20190501120101</td>
-<td>支付时为支付创建时间，退款时为退款创建时间</td>
-<td>三联系统中订单创建时间</td>
-<td>收钱吧<code>{交易日期}+{时间}</code><br/></td>
-</tr>
-<tr>
-<td>trade_time</td>
-<td>交易时间</td>
-<td>20190501120101</td>
-<td>支付时为支付时间，退款时为退款时间</td>
-<td>三联系统中订单创建时间</td>
-<td>收钱吧<code>{交易日期}+{时间}</code><br/></td>
-</tr>
-<tr>
-<td>acquire_id</td>
-<td>收单机构编号</td>
-<td></td>
-<td>门店自主收银模式下，填写对应的渠道编号，对接时找技术同学确认；</td>
-<td>固定传值 <code>DEFAULT</code></td>
-<td><code>DEFAULT</code></td>
-</tr>
-</tbody>
-</table>
-</li>
-</ol>
-</li>
-</ol>
-  </div>
-</section>
-
-<section id="清算批次" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">📦</span>
-    <div>
-      <span class="section-number">21</span>
-      <h2 class="section-title">清算批次</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
-<li>清算文件上传成功后，需再创建清算批次正式发起清算。</li>
-</ol>
-  </div>
-</section>
-
-<section id="新建批次" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">22</span>
-      <h3 class="section-title">新建批次</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide section-divider" id="slide-18">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">📁</div>
+                <div class="section-number">Section 05</div>
+                <div class="section-title">清算文件</div>
+              </div>
+            </div><div class="slide section-divider" id="slide-19">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">📦</div>
+                <div class="section-number">Section 06</div>
+                <div class="section-title">清算批次</div>
+              </div>
+            </div><div class="slide content-slide" id="slide-20">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">➕</div>
+                  <div>
+                    <div class="title">新建批次</div>
+                    <div class="breadcrumb">清算批次</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>新建批次操作从「清算文件」发起。</p>
 </li>
@@ -4533,20 +3956,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="批次管理批次列表" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">23</span>
-      <h3 class="section-title">批次管理（批次列表）</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-21">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">📊</div>
+                  <div>
+                    <div class="title">批次管理（批次列表）</div>
+                    <div class="breadcrumb">清算批次</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>筛选：</p>
 <ol>
@@ -4708,20 +4129,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="批次详情" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">24</span>
-      <h3 class="section-title">批次详情</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-22">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🔍</div>
+                  <div>
+                    <div class="title">批次详情</div>
+                    <div class="breadcrumb">清算批次</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>批次号：带入清算文件名称。</p>
 </li>
@@ -4763,20 +4182,18 @@ hr {
 <li>
 <p>完成时间：<code>批次查询接口&lt;ant.mybank.bkcloudbatch.batch.query&gt;</code>接口返回的<code>FinishTime</code>的值。</p>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="编辑批次" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">25</span>
-      <h3 class="section-title">编辑批次</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-23">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">✏️</div>
+                  <div>
+                    <div class="title">编辑批次</div>
+                    <div class="breadcrumb">清算批次</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>批次号：带入清算文件名称。</p>
 </li>
@@ -4822,73 +4239,26 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="签约授权" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">🔐</span>
-    <div>
-      <span class="section-number">26</span>
-      <h2 class="section-title">签约授权</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
-<li>
-<p>该功能是为了管理、查看用于通过商户子户向体系内其他子户或体系外银行卡/支付宝转账付款的授权与合约。</p>
-</li>
-<li>
-<p>此部分包含以下两种合约：</p>
-<ol>
-<li>
-<p>协议授权代扣：用于对体系内子户转账。以下简称为协议代扣。</p>
-</li>
-<li>
-<p>加盟授权代付：用于对外部银行卡/支付宝转账。以下简称为授权代付。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>协议授权代扣合约：</p>
-<ol>
-<li>
-<p>由商户在入驻时完成签约授权，商户授权后网商通知品牌方合约号。商户：合约=1:1。</p>
-</li>
-<li>
-<p>每次收到协议代扣的平台通知（授权/解约通知\&lt;ant.mybank.merchantprod.merchant.arrangement.info.notify&gt;）时立即调<code>查询协议代扣授权状态&lt;``ant.mybank.merchantprod.merchant.arrangement.info``.quer``y&gt;</code>接口查一次合约最新状态。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>加盟授权代付合约：</p>
-<ol>
-<li>
-<p>由品牌方（平台）发起签约授权，商户授权完成后网商返回合约号。商户：合约：过桥户=1:1:1。</p>
-</li>
-<li>
-<p>每次收到授权代付合约的平台通知（授权合同变更通知\&lt;ant.mybank.bkcloudfunds.protocol.sign.notify&gt;）时立即调<code>查询当前授权协议内容接口地址：&lt;ant.mybank.bkcloudfunds.protocol.arr.query&gt;</code>接口查一次合约最新内容。</p>
-</li>
-<li>
-<p>收到签约/修改通知（签约申请/协议变更申请（同步和异步））时<code>立即调查询申请单目前状态&lt;ant.mybank.bkcloudfunds.protocol.sign.apply.query&gt;</code>接口查询申请单最新状态。</p>
-</li>
-</ol>
-</li>
-</ol>
-  </div>
-</section>
-
-<section id="新增修改授权代付合约-授权代付合约产生" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">27</span>
-      <h3 class="section-title">新增/修改授权代付合约-授权代付合约产生</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide section-divider" id="slide-24">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">🔐</div>
+                <div class="section-number">Section 07</div>
+                <div class="section-title">签约授权</div>
+              </div>
+            </div><div class="slide content-slide" id="slide-25">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🔏</div>
+                  <div>
+                    <div class="title">新增/修改授权代付合约-授权代付合约产生</div>
+                    <div class="breadcrumb">签约授权</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>协议代扣的授权只能由商户在支付宝云资金小程序主动发起。</p>
 </li>
@@ -5317,20 +4687,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="合约管理" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">📝</span>
-    <div>
-      <span class="section-number">28</span>
-      <h3 class="section-title">合约管理</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <h4 id="合约列表">合约列表</h4><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-26">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">📌</div>
+                  <div>
+                    <div class="title">合约列表</div>
+                    <div class="breadcrumb">签约授权</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>一个合约只能归属一个商户。</p>
 </li>
@@ -5572,7 +4940,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol><h4 id="合约详情">合约详情</h4><h5 id="_49">协议代扣</h5><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-27">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">📌</div>
+                  <div>
+                    <div class="title">合约详情</div>
+                    <div class="breadcrumb">签约授权</div>
+                  </div>
+                </div>
+                <div class="slide-body"><h5 id="_49">协议代扣</h5><ol>
 <li>
 <p>合约号：<code>ArrangementNo</code>字段的值。</p>
 </li>
@@ -5719,20 +5098,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="授权记录授权申请单" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">📋</span>
-    <div>
-      <span class="section-number">29</span>
-      <h3 class="section-title">授权记录（授权申请单）</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <h4 id="授权记录申请单的产生">授权记录（申请单）的产生</h4><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-28">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">📝</div>
+                  <div>
+                    <div class="title">授权记录（申请单）的产生</div>
+                    <div class="breadcrumb">签约授权</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>授权记录（也称为申请单）是合约的产生过程。</p>
 <ol>
@@ -5772,7 +5149,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol><h4 id="授权记录列表">授权记录列表</h4><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-29">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">📝</div>
+                  <div>
+                    <div class="title">授权记录列表</div>
+                    <div class="breadcrumb">签约授权</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>一个合约可对应多个授权记录，通过合约号可查询该合约的签约，修改，解约，解约审核的授权记录。</p>
 </li>
@@ -6184,7 +5572,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol><h4 id="授权记录详情申请单详情">授权记录详情（申请单详情）</h4><h5 id="_55">协议代扣</h5><p>协议代扣申请单来源</p><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-30">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">📝</div>
+                  <div>
+                    <div class="title">授权记录详情（申请单详情）</div>
+                    <div class="breadcrumb">签约授权</div>
+                  </div>
+                </div>
+                <div class="slide-body"><h5 id="_55">协议代扣</h5><p>协议代扣申请单来源</p><ol>
 <li>
 <p>签约：商户在网商云资金小程序发起签约时网商通过<code>授权/解约通知接口&lt;``ant.mybank.merchantprod.merchant.arrangement.info``.notify&gt;</code>通知平台，对应字段<code>当前合约状态ArrangementStatus</code>值<code>已生效:VALID</code>。</p>
 </li>
@@ -6515,33 +5914,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="付款" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">💰</span>
-    <div>
-      <span class="section-number">30</span>
-      <h2 class="section-title">付款</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    
-  </div>
-</section>
-
-<section id="付款记录" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💰</span>
-    <div>
-      <span class="section-number">31</span>
-      <h3 class="section-title">付款记录</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-31">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">💰</div>
+                  <div>
+                    <div class="title">付款记录</div>
+                    <div class="breadcrumb">签约授权</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>接口调用：</p>
 <ol>
@@ -6808,22 +6192,31 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="付款单详情" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💰</span>
-    <div>
-      <span class="section-number">32</span>
-      <h3 class="section-title">付款单详情</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-32">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">💰</div>
+                  <div>
+                    <div class="title">付款单详情</div>
+                    <div class="breadcrumb">签约授权</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>接口调用和数据来源同付款单列表。</li>
-</ol><h4 id="协议代扣">协议代扣</h4><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-33">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">📝</div>
+                  <div>
+                    <div class="title">协议代扣</div>
+                    <div class="breadcrumb">签约授权</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>业务流水号：发起付款申请时系统生成的业务流水号，对应网商<code>OutTradeNo</code>字段值。</p>
 </li>
@@ -6927,7 +6320,18 @@ hr {
 <li>
 <p>错误描述：对应网商<code>ErrorDesc</code>字段值，状态为「FAIL」时出现。</p>
 </li>
-</ol><h4 id="授权代付">授权代付</h4><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-34">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🔏</div>
+                  <div>
+                    <div class="title">授权代付</div>
+                    <div class="breadcrumb">签约授权</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>业务流水号：发起付款申请时系统生成的业务流水号，对应网商<code>OutTradeNo</code>字段值。</p>
 </li>
@@ -7035,20 +6439,18 @@ hr {
 <li>
 <p>错误描述：对应网商<code>ErrorDesc</code>字段值，状态为「FAIL」时出现。</p>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="批量付款" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💰</span>
-    <div>
-      <span class="section-number">33</span>
-      <h3 class="section-title">批量付款</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <p>用户在前置操作中发起付款时，默认进入「批次付款」标签页。</p><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-35">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">💰</div>
+                  <div>
+                    <div class="title">批量付款</div>
+                    <div class="breadcrumb">签约授权</div>
+                  </div>
+                </div>
+                <div class="slide-body"><p>用户在前置操作中发起付款时，默认进入「批次付款」标签页。</p><ol>
 <li>
 <p>填写批量付款表格并上传</p>
 <ol>
@@ -7275,20 +6677,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="单笔付款" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💰</span>
-    <div>
-      <span class="section-number">34</span>
-      <h3 class="section-title">单笔付款</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-36">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">💰</div>
+                  <div>
+                    <div class="title">单笔付款</div>
+                    <div class="breadcrumb">签约授权</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>根据费用场景（对内/对外），需调用网商不同的接口。</p>
 <ol>
@@ -7501,20 +6901,18 @@ hr {
 </li>
 </ol>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="发起付款接口调用" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💰</span>
-    <div>
-      <span class="section-number">35</span>
-      <h3 class="section-title">发起付款接口调用</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <h4 id="协议代扣-2">协议代扣</h4><table>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-37">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">📝</div>
+                  <div>
+                    <div class="title">协议代扣</div>
+                    <div class="breadcrumb">签约授权</div>
+                  </div>
+                </div>
+                <div class="slide-body"><table>
 <thead>
 <tr>
 <th><strong>序号</strong></th>
@@ -7679,7 +7077,7 @@ hr {
 <td></td>
 </tr>
 </tbody>
-</table><p>PayerSpecifiedInfo → specifiedMerchantAmtComposition</p><pre class="codehilite"><code class="language-JSON">{
+</table><p>PayerSpecifiedInfo → specifiedMerchantAmtComposition</p><pre><code class="language-JSON">{
     "specifiedMerchantAmtComposition": {
         "componentPriorityList": [
             {
@@ -7697,7 +7095,18 @@ hr {
         ]
     }
 }
-</code></pre><h4 id="授权代付-2">授权代付</h4><table>
+</code></pre></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-38">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🔏</div>
+                  <div>
+                    <div class="title">授权代付</div>
+                    <div class="breadcrumb">签约授权</div>
+                  </div>
+                </div>
+                <div class="slide-body"><table>
 <thead>
 <tr>
 <th><strong>参数名称</strong></th>
@@ -7873,259 +7282,50 @@ hr {
 <td></td>
 </tr>
 </tbody>
-</table>
-  </div>
-</section>
-
-<section id="平台管理" class="section-hero reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">36</span>
-      <h1 class="section-title">平台管理</h1>
-    </div>
-  </div>
-  <div class="section-body">
-    
-  </div>
-</section>
-
-<section id="区域划分" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">🗺️</span>
-    <div>
-      <span class="section-number">37</span>
-      <h2 class="section-title">区域划分</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
-<li>
-<p>筛选区域</p>
-<ol>
-<li>
-<p>区域名称：文字匹配，支持关键词筛选（非完全匹配）。</p>
-</li>
-<li>
-<p>状态：全部，已启用，已禁用。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>添加区域：支持批量添加</p>
-<ol>
-<li>
-<p>名称：必填，区域名称文字。</p>
-</li>
-<li>
-<p>新增区域：支持批量添加多个区域，点击后添加第二个区域的名称。</p>
-</li>
-<li>
-<p>状态：启用，禁用。单选，默认为启用，选择时有对应的状态说明文字。</p>
-<ol>
-<li>
-<p>启用：启用状态下，选择区域时将正常展示该区域。</p>
-</li>
-<li>
-<p>禁用：禁用状态下，选择区域列表不展示该项区域。</p>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-<li>
-<p>区域展示列表</p>
-<ol>
-<li>
-<p>区域名称：区域名称文字。</p>
-</li>
-<li>
-<p>状态：区域启用/禁用状态</p>
-</li>
-<li>
-<p>操作</p>
-<ol>
-<li>
-<p>禁用：已启用的区域展示该按钮，点击后弹窗提示「禁用状态下，选择区域列表不展示该项区域。」。</p>
-</li>
-<li>
-<p>启用：已禁用区域展示该按钮，点击后弹窗提示「启用状态下，选择区域时将正常展示该区域。」</p>
-</li>
-<li>
-<p>编辑：仅可修改单个区域信息</p>
-<ol>
-<li>
-<p>区域名称：区域名称文字</p>
-</li>
-<li>
-<p>状态：启用，禁用。单选，默认带入原状态，选择时有对应的状态说明文字。</p>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-  </div>
-</section>
-
-<section id="业务属性" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">🏷️</span>
-    <div>
-      <span class="section-number">38</span>
-      <h2 class="section-title">业务属性</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
-<li>
-<p>筛选业务属性</p>
-<ol>
-<li>
-<p>业务属性名称：文字匹配，支持关键词筛选（非完全匹配）。</p>
-</li>
-<li>
-<p>状态：全部，已启用，已禁用。单选。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>添加业务属性：支持批量添加</p>
-<ol>
-<li>
-<p>名称：必填，业务属性名称文字。</p>
-</li>
-<li>
-<p>新增业务属性：支持批量添加多个业务属性，点击后添加第二个业务属性名称。</p>
-</li>
-<li>
-<p>状态：启用，禁用。单选，默认为启用，选择时有对应的状态说明文字。</p>
-<ol>
-<li>
-<p>启用：启用状态下，选择业务属性时将正常展示该业务属性。</p>
-</li>
-<li>
-<p>禁用：禁用状态下，选择业务属性列表不展示该项业务属性。</p>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-<li>
-<p>业务属性展示列表</p>
-<ol>
-<li>
-<p>业务属性名称：业务属性名称文字。</p>
-</li>
-<li>
-<p>状态：业务属性启用/禁用状态</p>
-</li>
-<li>
-<p>操作</p>
-<ol>
-<li>
-<p>禁用：已启用的业务属性展示该按钮，点击后弹窗提示「禁用状态下，选择业务属性列表不展示该项业务属性。」。</p>
-</li>
-<li>
-<p>启用：已禁用业务属性展示该按钮，点击后弹窗提示「启用状态下，选择业务属性时将正常展示该业务属性。」</p>
-</li>
-<li>
-<p>编辑：仅可修改单个业务属性信息</p>
-<ol>
-<li>
-<p>业务属性名称：业务属性名称文字</p>
-</li>
-<li>
-<p>状态：启用，禁用。单选，默认带入原状态，选择时有对应的状态说明文字。</p>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-  </div>
-</section>
-
-<section id="角色" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">👥</span>
-    <div>
-      <span class="section-number">39</span>
-      <h2 class="section-title">角色</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
-<li>超级管理员角色：拥有所有业务模块的所有管理权限。</li>
-</ol>
-  </div>
-</section>
-
-<section id="账户" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">👤</span>
-    <div>
-      <span class="section-number">40</span>
-      <h2 class="section-title">账户</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
-<li>
-<p>预置一个管理员账户</p>
-<ol>
-<li>
-<p>账户：admin</p>
-</li>
-<li>
-<p>密码：care2026</p>
-</li>
-</ol>
-</li>
-</ol><hr/>
-  </div>
-</section>
-
-<section id="全局规则" class="section-hero reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">41</span>
-      <h1 class="section-title">全局规则</h1>
-    </div>
-  </div>
-  <div class="section-body">
-    
-  </div>
-</section>
-
-<section id="公司和门店编码生成规则" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">🏪</span>
-    <div>
-      <span class="section-number">42</span>
-      <h2 class="section-title">公司和门店编码生成规则</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    
-  </div>
-</section>
-
-<section id="总部公司编码" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">🏢</span>
-    <div>
-      <span class="section-number">43</span>
-      <h3 class="section-title">总部公司编码</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</table></div>
+              </div>
+            </div><div class="slide section-divider" id="slide-39">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">🌐</div>
+                <div class="section-number">Section 08</div>
+                <div class="section-title">区域划分</div>
+              </div>
+            </div><div class="slide section-divider" id="slide-40">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">🏷️</div>
+                <div class="section-number">Section 09</div>
+                <div class="section-title">业务属性</div>
+              </div>
+            </div><div class="slide section-divider" id="slide-41">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">👤</div>
+                <div class="section-number">Section 10</div>
+                <div class="section-title">角色</div>
+              </div>
+            </div><div class="slide section-divider" id="slide-42">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">💳</div>
+                <div class="section-number">Section 11</div>
+                <div class="section-title">账户</div>
+              </div>
+            </div><div class="slide content-slide" id="slide-43">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🏢</div>
+                  <div>
+                    <div class="title">总部公司编码</div>
+                    <div class="breadcrumb">账户</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>格式：<code>{CARE}BD{3位自增数字编号}</code></p>
 </li>
@@ -8149,20 +7349,18 @@ hr {
 <li>
 <p>删改规则：总部公司编码一经生成不可删除，不可修改。</p>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="区域公司编码" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">🏗️</span>
-    <div>
-      <span class="section-number">44</span>
-      <h3 class="section-title">区域公司编码</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-44">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🗺️</div>
+                  <div>
+                    <div class="title">区域公司编码</div>
+                    <div class="breadcrumb">账户</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>格式：<code>{CARE}REG{001}{3位自增数字编号}</code></p>
 </li>
@@ -8189,20 +7387,18 @@ hr {
 <li>
 <p>删改规则：区域公司编码一经生成不可删除，不可修改。</p>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="门店编码" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">🏪</span>
-    <div>
-      <span class="section-number">45</span>
-      <h3 class="section-title">门店编码</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-45">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🏪</div>
+                  <div>
+                    <div class="title">门店编码</div>
+                    <div class="breadcrumb">账户</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>格式：<code>{品牌名}{省份缩写}{YYYYMMDD}{3位自增数字编号}</code></p>
 </li>
@@ -8229,20 +7425,18 @@ hr {
 <li>
 <p>删改规则：门店编码一经生成不可删除，不可修改。</p>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="外部商户号商户编码" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">46</span>
-      <h3 class="section-title">外部商户号（商户编码）</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-46">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🔢</div>
+                  <div>
+                    <div class="title">外部商户号（商户编码）</div>
+                    <div class="breadcrumb">账户</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>格式：{商户关联主体的编码}_{2位自增数字}</p>
 </li>
@@ -8266,254 +7460,34 @@ hr {
 <li>
 <p>删改规则：外部商户号一经生成不可删除，不可修改。</p>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="商户入驻状态" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">47</span>
-      <h2 class="section-title">商户入驻状态</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
-<li>
-<p>入驻状态包含网商以下接口返回值：</p>
-<ol>
-<li>
-<p>商户预入驻结果查询接口<code>&lt;ant.mybank.merchantprod.merch.register.query&gt;</code>中的预入驻状态<code>RegisterStatus</code>字段。</p>
-</li>
-<li>
-<p>预入驻激活结果通知接口中的<code>RegisterStatus</code>字段。</p>
-</li>
-<li>
-<p>预入驻激活结果查询接口<code>&lt; ant.mybank.merchantprod.merch.applet.register.query&gt;</code>中的<code>RegisterStatus</code>字段。</p>
-</li>
-<li>
-<p>小程序入驻商户注册通知接口<code>&lt;ant.mybank.merchantprod.merch.notify&gt;</code>中的<code>RegisterStatus</code>字段。</p>
-</li>
-<li>
-<p>小程序入驻结果查询接口<code>&lt;ant.mybank.merchantprod.merch.applet.register.query&gt;</code>中的<code>RegisterStatus</code>字段。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>状态说明</p>
-<ol>
-<li>
-<p>未入驻：商户在本系统（「新增注册码」按钮）刚创建时的初始状态。</p>
-</li>
-<li>
-<p>预入驻审核中：商户预入驻申请提交后等待网商审核时的状态。</p>
-<ol>
-<li>
-<p>调用网商<code>商户预入驻接口&lt;ant.mybank.bkmerchantprod.merch.applet.pre.register&gt;</code>成功后获得<code>OrderNo</code>后的状态。</p>
-</li>
-<li>
-<p>调用网商<code>商户预入驻结果查询接口&lt;ant.mybank.merchantprod.merch.register.query&gt;</code>返回的<code>RegisterStatus</code>字段<code>0：审核中</code>状态。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>待激活：商户预入驻成功，等待继续激活时的状态。</p>
-<ol>
-<li>调用网商<code>商户预入驻结果查询接口&lt;ant.mybank.merchantprod.merch.register.query&gt;</code>返回的<code>RegisterStatus</code>字段<code>1：成功</code>状态。</li>
-</ol>
-</li>
-<li>
-<p>预入驻失败：商户预入驻失败，会返回失败原因</p>
-<ol>
-<li>调用网商<code>商户预入驻结果查询接口&lt;ant.mybank.merchantprod.merch.register.query&gt;</code>返回的<code>RegisterStatus</code>字段<code>2：失败</code>状态。</li>
-</ol>
-</li>
-<li>
-<p>激活中：预入驻+激活的商户在预入驻成功后通过激活接口执行激活操作后通过以下接口查询到的激活状态。小程序入驻商户发起入驻后通过以下接口查询到的激活状态。</p>
-<ol>
-<li>
-<p>网商<code>激活结果通知接口</code>返回的注册中状态。</p>
-</li>
-<li>
-<p>调用网商<code>激活结果查询接口&lt; ant.mybank.merchantprod.merch.applet.register.query&gt;</code>返回的<code>RegisterStatus</code>字段<code>0：注册中</code>状态。</p>
-</li>
-<li>
-<p>调用网商<code>小程序入驻结果查询接口&lt;ant.mybank.merchantprod.merch.applet.register.query&gt;</code>返回的<code>RegisterStatus</code>字段<code>0：注册中</code>状态。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>激活成功：预入驻商户激活成功，小程序入驻商户入驻成功。</p>
-<ol>
-<li>
-<p>网商<code>激活结果通知接口</code>返回的成功状态。</p>
-</li>
-<li>
-<p>调用网商预入驻<code>激活结果查询接口&lt; ant.mybank.merchantprod.merch.applet.register.query&gt;</code>返回的<code>RegisterStatus</code>字段<code>1：成功</code>状态。</p>
-</li>
-<li>
-<p>小程序入驻<code>商户注册通知接口&lt;ant.mybank.merchantprod.merch.notify&gt;</code>返回的<code>RegisterStatus</code>字段<code>1：成功</code>状态。</p>
-</li>
-<li>
-<p>调用网商<code>小程序入驻结果查询接口&lt;ant.mybank.merchantprod.merch.applet.register.query&gt;</code>返回的<code>RegisterStatus</code>字段<code>1：成功</code>状态。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>激活失败：商户激活失败</p>
-<ol>
-<li>
-<p>网商<code>激活结果通知接口</code>返回的失败状态。</p>
-</li>
-<li>
-<p>网商预入驻<code>激活结果查询接口&lt; ant.mybank.merchantprod.merch.applet.register.query&gt;</code>返回的<code>RegisterStatus</code>字段<code>2：失败</code>状态。</p>
-</li>
-<li>
-<p>小程序入驻<code>商户注册通知接口&lt;ant.mybank.merchantprod.merch.notify&gt;</code>返回的<code>RegisterStatus</code>字段<code>2：失败</code>状态。</p>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-<li>
-<p>商户入驻状态与网商接口字段映射</p>
-<table>
-<thead>
-<tr>
-<th>前端展示的状态</th>
-<th><code>商户预入驻结果查询</code>接口<br/></th>
-<th><code>预入驻激活结果通知</code>接口<br/></th>
-<th><code>预入驻激活查询</code>接口</th>
-<th>小程序入驻<code>商户注册通知</code>接口</th>
-<th>小程序<code>入驻结果查询</code>接口</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>未入驻</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-</tr>
-<tr>
-<td>预入驻审核中</td>
-<td>0：审核中</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-</tr>
-<tr>
-<td>待激活</td>
-<td>1：成功</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-</tr>
-<tr>
-<td>预入驻失败</td>
-<td>2：失败</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-</tr>
-<tr>
-<td>激活中</td>
-<td>-</td>
-<td>商户激活查询接口一致</td>
-<td>0：注册中</td>
-<td>-</td>
-<td>0：注册中</td>
-</tr>
-<tr>
-<td>激活成功</td>
-<td>-</td>
-<td>商户激活查询接口一致</td>
-<td>1：成功</td>
-<td>1：成功</td>
-<td>1：成功</td>
-</tr>
-<tr>
-<td>激活失败</td>
-<td>-</td>
-<td>商户激活查询接口一致</td>
-<td>2：失败</td>
-<td>2：失败</td>
-<td>-</td>
-</tr>
-</tbody>
-</table>
-</li>
-<li>
-<p>状态流转</p>
-</li>
-</ol>
-  </div>
-</section>
-
-<section id="清算订单状态" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">📄</span>
-    <div>
-      <span class="section-number">48</span>
-      <h2 class="section-title">清算订单状态</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <p>三联系统未维护订单创建、支付等前置状态，本系统订单状态从订单上送环节开始定义。</p><ol>
-<li>
-<p>状态定义：</p>
-<ol>
-<li>
-<p>未上送：支付订单从三联系统/收钱吧拉取至本系统后的初始状态，表示订单在本系统中刚创建，尚未向网商银行发起订单上送。</p>
-</li>
-<li>
-<p>上送失败：「未上送」订单调用网商<code>补单创单接口</code>失败（网络异常、参数校验驳回、网关报错等），未获取网商订单号。</p>
-</li>
-<li>
-<p>已上送：</p>
-<ol>
-<li>
-<p>支付单：「未上送」的支付订单调用网商银行<code>补单创单接口&lt; ant.mybank.bkcloudfunds.bill.pay&gt;</code> 完成订单上送并拿到网商订单号 <code>{OrderNo}</code>后的状态。</p>
-</li>
-<li>
-<p>退款单：「未上送」的退款单变更订单状态为「已上送」，不调用网商接口（网商是不需要退款单上送）。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>清算中：「已上送」状态的订单，关联的清算文件上传成功，关联的批次调用<code>创建批次接口&lt;ant.mybank.bkcloudbatch.batch.create&gt;</code>创建批次成功进入「清算中」状态，网商执行清算操作中的状态。</p>
-</li>
-<li>
-<p>清算成功：「清算中」状态的订单，网商侧完成该订单所属批次的清算，批次清算结果中该笔订单为「清算成功」时的状态。</p>
-</li>
-<li>
-<p>清算失败：「清算中」状态的订单，网商侧完成该订单所属批次的清算，批次清算结果中该笔订单为「清算失败」时的状态。批次清算结果为「部分成功」时需通过校验文件确认该批次中每个订单的清算结果。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>状态变更</p>
-</li>
-</ol>
-  </div>
-</section>
-
-<section id="POS机绑定状态" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">49</span>
-      <h3 class="section-title">POS机绑定状态</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide section-divider" id="slide-47">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">🔄</div>
+                <div class="section-number">Section 12</div>
+                <div class="section-title">商户入驻状态</div>
+              </div>
+            </div><div class="slide section-divider" id="slide-48">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">📄</div>
+                <div class="section-number">Section 13</div>
+                <div class="section-title">清算订单状态</div>
+              </div>
+            </div><div class="slide content-slide" id="slide-49">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🔄</div>
+                  <div>
+                    <div class="title">POS机绑定状态</div>
+                    <div class="breadcrumb">清算订单状态</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>状态定义：</p>
 <ol>
@@ -8528,276 +7502,50 @@ hr {
 <li>
 <p>状态变更</p>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="清算批次号生成规则" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">📦</span>
-    <div>
-      <span class="section-number">50</span>
-      <h2 class="section-title">清算批次号生成规则</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
-<li>
-<p>格式：<code>{CARE}{YYYYMMDD}_{2位自增数字编号}</code></p>
-</li>
-<li>
-<p>示例：CARE20260509_01，表示可柔品牌2026年5月9日生成的第一个清算批次。</p>
-</li>
-<li>
-<p>解释</p>
-<ol>
-<li>
-<p>{CARE}：品牌名，可柔品牌的所有清算批次「CARE」开头。</p>
-</li>
-<li>
-<p>{YYYYMMDD}：年月日，清算批次创建日期。</p>
-</li>
-<li>
-<p>-：固定值，区分符号。</p>
-</li>
-<li>
-<p>{2位自增数字编号}：表示该品牌对应日期创建的第几个清算批次，自增，顺序按系统中新增批次的时间顺序决定。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>删改规则：清算批次号一经生成不可删除，不可修改。</p>
-<ol>
-<li>
-<p>清算批次号在清算文件和创建批次接口中一一对应使用。</p>
-</li>
-<li>
-<p>清算文件在未使用（未清算）时可撤回或删除。重新生成清算文件和新建批次时清算批次号也按本规则生成新的批次号。</p>
-</li>
-</ol>
-</li>
-</ol>
-  </div>
-</section>
-
-<section id="清算文件状态" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">📁</span>
-    <div>
-      <span class="section-number">51</span>
-      <h2 class="section-title">清算文件状态</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol start="5">
-<li>
-<p>状态定义：</p>
-<ol>
-<li>
-<p>待上传：清算文件通过清算订单在本系统生成时的初始状态，此时尚未按网商规范进行文件上传。</p>
-</li>
-<li>
-<p>已作废：「待上传」「上传失败」和「已撤回」状态的清算文件执行「作废」操作后的状态，作废后该文件不能再上传，也不能通过该文件新建批次，文件中的所有订单状态恢复为「已上送」。</p>
-</li>
-<li>
-<p>上传失败：「待上传」状态的清算文件按网商规范发起文件上传操作失败（网络异常、参数校验驳回、网关报错等）时的状态。</p>
-</li>
-<li>
-<p>已上传：「待上传」状态的文件已按照网商规范完成上传，文件层面已就绪，待创建清算批次。</p>
-</li>
-<li>
-<p>已撤回：「已上传」状态的清算文件，在清算批次未上报之前可撤回（从网商网盘中删除）。</p>
-</li>
-<li>
-<p>待上报：「已上传」状态的清算文件对应的清算批次创建成功，批次为「待上报」状态时的状态。</p>
-</li>
-<li>
-<p>上报失败：「待上报」状态清算批次调用网商<code>创建批次接口</code>失败（网络异常、参数校验驳回、网关报错等）批次状态为「上报失败」时对应的清算文件的状态。</p>
-</li>
-<li>
-<p>清算中：「待上报」状态的批次调用网商<code>创建批次接口&lt;ant.mybank.bkcloudbatch.batch.create&gt;</code>上报清算批次成功后批次状态为「清算中」时对应的清算文件的状态。</p>
-</li>
-<li>
-<p>清算成功：「清算中」状态的批次待网商侧整批清算流程执行完成后，系统通过<code>补单批次完结通知接口</code>和<code>批次查询接口</code>获得清算结果为「清算成功」时对应的清算文件的状态。</p>
-</li>
-<li>
-<p>部分成功：「清算中」状态的批次待网商侧整批清算流程执行完成后，系统通过<code>补单批次完结通知接口</code>和<code>批次查询接口</code>获得清算结果为「部分成功」时对应的清算文件的状态。</p>
-</li>
-<li>
-<p>清算失败：「清算中」状态的批次待网商侧整批清算流程执行完成后，系统通过<code>补单批次完结通知接口</code>和<code>批次查询接口</code>获得清算结果为「清算失败」时对应的清算文件的状态。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>状态流转</p>
-</li>
-</ol>
-  </div>
-</section>
-
-<section id="清算批次状态" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">📦</span>
-    <div>
-      <span class="section-number">52</span>
-      <h2 class="section-title">清算批次状态</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
-<li>
-<p>状态说明</p>
-<ol>
-<li>
-<p>待上报：清算批次通过清算文件在本系统创建成功后的初始状态，此时本系统保存批次数据，未调用网商创建批次接口。</p>
-</li>
-<li>
-<p>上报失败：「待上报」状态的批次调用网商<code>创建批次接口</code>失败（网络异常、参数错误、接口返回业务拒绝）时的状态，可通过是否拿到到网商<code>批次实例号</code>来判断。</p>
-</li>
-<li>
-<p>已作废：「待上报」和「上报失败」状态的批次执行「作废」操作后的状态，已作废的批次不能再发起上报与清算。批次作废时对应的清算文件状态同步变更为「已作废」。</p>
-</li>
-<li>
-<p>清算中：「待上报」状态的批次调用网商<code>创建批次接口&lt;ant.mybank.bkcloudbatch.batch.create&gt;</code>成功后网商处理清算批次中的状态，可通过是否拿到网商批次实例号<code>Batchlnstanceld</code>来判断。</p>
-</li>
-<li>
-<p>清算成功：「清算中」状态的批次通过<code>批次完结通知</code>和<code>批次查询接口</code>获得的批次清算结果中的<code>SUCCESS</code>状态。</p>
-</li>
-<li>
-<p>部分成功：通过<code>批次完结通知</code>或<code>批次查询接口</code>获得的批次清算结果中的<code>PART_SUCCESS</code>状态。</p>
-</li>
-<li>
-<p>清算失败：通过<code>批次完结通知</code>或<code>批次查询接口</code>获得的批次清算结果中的<code>FAIL</code>状态。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>状态映射</p>
-<table>
-<thead>
-<tr>
-<th>前端展示的状态</th>
-<th><code>批次完结通知</code>接口</th>
-<th><code>批次查询</code>接口</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>待上报</td>
-<td>-</td>
-<td>-</td>
-</tr>
-<tr>
-<td>上报失败</td>
-<td>-</td>
-<td>-</td>
-</tr>
-<tr>
-<td>已作废</td>
-<td>-</td>
-<td>-</td>
-</tr>
-<tr>
-<td>清算中</td>
-<td>-</td>
-<td>DEALING</td>
-</tr>
-<tr>
-<td>清算成功</td>
-<td>SUCCESS</td>
-<td>SUCCESS</td>
-</tr>
-<tr>
-<td>部分成功</td>
-<td>PART_SUCCESS</td>
-<td>-</td>
-</tr>
-<tr>
-<td>清算失败</td>
-<td>FAIL</td>
-<td>FAIL</td>
-</tr>
-</tbody>
-</table>
-</li>
-<li>
-<p>状态流转</p>
-</li>
-</ol>
-  </div>
-</section>
-
-<section id="系统流水号" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">53</span>
-      <h2 class="section-title">系统流水号</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <p>协议代扣和授权代付合约变更（签约，修改，解约，解约审核）时产生申请单，每个申请单有唯一的系统流水号。</p><p>系统流水号对应网商接口中的<code>OutTradeNo</code>字段。</p><ol>
-<li>
-<p>格式：<code>{N/W}{YYYYMMDD}{4位自增数字编号}</code></p>
-</li>
-<li>
-<p>示例：N20260509_0001，表示2026年5月9日生成的第1个系统流水号。</p>
-</li>
-<li>
-<p>解释</p>
-<ol>
-<li>
-<p>{N\W}：协议代扣或授权代付标识。</p>
-<ol>
-<li>
-<p>N：指代协议代扣。协议抵扣是体系内子户划转，对内，用N指代。</p>
-</li>
-<li>
-<p>W：指代授权代付。授权代付是对外部账户付款，对外，用W表示。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>{YYYYMMDD}：年月日，系统流水号生成日期。</p>
-</li>
-<li>
-<p>{4位自增数字编号}：表示该日期创建的第x个系统流水号，自增，顺序按系统中生成系统流水号的时间顺序决定。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>删改规则：系统流水号一经生成不可删除，不可修改。</p>
-<ol>
-<li>系统流水号在系统中和申请单一一对应。</li>
-</ol>
-</li>
-</ol>
-  </div>
-</section>
-
-<section id="协议代扣-3" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">54</span>
-      <h2 class="section-title">协议代扣</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    
-  </div>
-</section>
-
-<section id="协议代扣申请单类型" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">55</span>
-      <h3 class="section-title">协议代扣申请单类型</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <table>
+</ol></div>
+              </div>
+            </div><div class="slide section-divider" id="slide-50">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">📦</div>
+                <div class="section-number">Section 14</div>
+                <div class="section-title">清算批次号生成规则</div>
+              </div>
+            </div><div class="slide section-divider" id="slide-51">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">📁</div>
+                <div class="section-number">Section 15</div>
+                <div class="section-title">清算文件状态</div>
+              </div>
+            </div><div class="slide section-divider" id="slide-52">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">📦</div>
+                <div class="section-number">Section 16</div>
+                <div class="section-title">清算批次状态</div>
+              </div>
+            </div><div class="slide section-divider" id="slide-53">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">🔢</div>
+                <div class="section-number">Section 17</div>
+                <div class="section-title">系统流水号</div>
+              </div>
+            </div><div class="slide content-slide" id="slide-54">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">📝</div>
+                  <div>
+                    <div class="title">协议代扣申请单类型</div>
+                    <div class="breadcrumb">系统流水号</div>
+                  </div>
+                </div>
+                <div class="slide-body"><table>
 <thead>
 <tr>
 <th>申请类型</th>
@@ -8830,20 +7578,18 @@ hr {
 <td>MerchantId, <br/>AuditResult(AGREE/REJECT), 审核意见<br/>ArrangementNo</td>
 </tr>
 </tbody>
-</table>
-  </div>
-</section>
-
-<section id="协议代扣申请单状态" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">56</span>
-      <h3 class="section-title">协议代扣申请单状态</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</table></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-55">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🔄</div>
+                  <div>
+                    <div class="title">协议代扣申请单状态</div>
+                    <div class="breadcrumb">系统流水号</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>申请单状态来源：</p>
 <ol>
@@ -8882,20 +7628,18 @@ hr {
 </tbody>
 </table>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="协议代扣合约状态" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">57</span>
-      <h3 class="section-title">协议代扣合约状态</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-56">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🔄</div>
+                  <div>
+                    <div class="title">协议代扣合约状态</div>
+                    <div class="breadcrumb">系统流水号</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>授权/解约成功通知接口\&lt;ant.mybank.merchantprod.merchant.arrangement.info.notify&gt;</p>
 </li>
@@ -8996,33 +7740,26 @@ hr {
 </tbody>
 </table>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="授权代付-3" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">58</span>
-      <h2 class="section-title">授权代付</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <p>方案介绍：<a href="https://bcno92iwldd2.feishu.cn/docx/UE98d1x14oAjiNxrZSYcBLIgnRV">加盟授权代付方案（子户→ 结算卡→ 外部银行卡/支付宝）</a></p>
-  </div>
-</section>
-
-<section id="授权代付业务子场景" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">59</span>
-      <h3 class="section-title">授权代付业务子场景</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <table>
+</ol></div>
+              </div>
+            </div><div class="slide section-divider" id="slide-57">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">🔏</div>
+                <div class="section-number">Section 18</div>
+                <div class="section-title">授权代付</div>
+              </div>
+            </div><div class="slide content-slide" id="slide-58">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🔏</div>
+                  <div>
+                    <div class="title">授权代付业务子场景</div>
+                    <div class="breadcrumb">授权代付</div>
+                  </div>
+                </div>
+                <div class="slide-body"><table>
 <thead>
 <tr>
 <th>子场景</th>
@@ -9075,20 +7812,18 @@ hr {
 <td>首次签约：需门店法人签约授权<br/>后续变更：需门店法人签约确认，如法人未签约则 48h 后默认生效</td>
 </tr>
 </tbody>
-</table>
-  </div>
-</section>
-
-<section id="授权代付申请单类型" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">60</span>
-      <h3 class="section-title">授权代付申请单类型</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</table></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-59">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🔏</div>
+                  <div>
+                    <div class="title">授权代付申请单类型</div>
+                    <div class="breadcrumb">授权代付</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>授权代付申请单类型与来源</li>
 </ol><table>
 <thead>
@@ -9123,20 +7858,18 @@ hr {
 <td>ApplyType=INVALID, 申请类型：失效<br/>AgreementNo, 合约号<br/>AgreementStatus=INVALID，合约状态</td>
 </tr>
 </tbody>
-</table>
-  </div>
-</section>
-
-<section id="授权代付申请单状态" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">61</span>
-      <h3 class="section-title">授权代付申请单状态</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</table></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-60">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🔄</div>
+                  <div>
+                    <div class="title">授权代付申请单状态</div>
+                    <div class="breadcrumb">授权代付</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>申请单状态来源</p>
 <ol>
@@ -9216,20 +7949,18 @@ hr {
 </tbody>
 </table>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="授权代付合约状态" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">62</span>
-      <h3 class="section-title">授权代付合约状态</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-61">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">🔄</div>
+                  <div>
+                    <div class="title">授权代付合约状态</div>
+                    <div class="breadcrumb">授权代付</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>合约状态来源</p>
 <ol>
@@ -9269,86 +8000,26 @@ hr {
 </tbody>
 </table>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="银行卡号和手机号脱敏规则" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">63</span>
-      <h2 class="section-title">银行卡号和手机号脱敏规则</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
-<li>
-<p>银行卡：</p>
-<ol>
-<li>
-<p>规则：前 4 位 + 星号占位 + 最后 4 位</p>
-</li>
-<li>
-<p>示例：<code>6222********1234</code></p>
-</li>
-</ol>
-</li>
-<li>
-<p>支付宝账号</p>
-<ol>
-<li>
-<p>手机号：</p>
-<ol>
-<li>
-<p>规则：前 4 位 + *** + 最后 4 位</p>
-</li>
-<li>
-<p>实例：<code>1337***1234</code></p>
-</li>
-</ol>
-</li>
-<li>
-<p>邮箱：</p>
-<ol>
-<li>
-<p>规则：前缀保留前 4 位 + <code>***</code> + @域名</p>
-</li>
-<li></li>
-<li>
-<p><code>abcd***``@88.com</code>（前缀保留前 4 位，后面 ***，如果前缀部分≤4位则全部保留）</p>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-  </div>
-</section>
-
-<section id="对外付款" class="section-card reveal">
-  <div class="section-header">
-    <span class="section-icon">💰</span>
-    <div>
-      <span class="section-number">64</span>
-      <h2 class="section-title">对外付款</h2>
-    </div>
-  </div>
-  <div class="section-body">
-    
-  </div>
-</section>
-
-<section id="业务流水号" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💎</span>
-    <div>
-      <span class="section-number">65</span>
-      <h3 class="section-title">业务流水号</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <h4 id="批量付款业务流水号">批量付款业务流水号</h4><h5 id="_97">批量付款批次号</h5><ol>
+</ol></div>
+              </div>
+            </div><div class="slide section-divider" id="slide-62">
+              <div class="deco-circle deco-1"></div>
+              <div class="deco-circle deco-2"></div>
+              <div class="slide-inner" style="text-align:center">
+                <div class="section-icon">🔒</div>
+                <div class="section-number">Section 19</div>
+                <div class="section-title">银行卡号和手机号脱敏规则</div>
+              </div>
+            </div><div class="slide content-slide" id="slide-63">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">💰</div>
+                  <div>
+                    <div class="title">批量付款业务流水号</div>
+                    <div class="breadcrumb">银行卡号和手机号脱敏规则</div>
+                  </div>
+                </div>
+                <div class="slide-body"><h5 id="_97">批量付款批次号</h5><ol>
 <li>
 <p>格式：<code>{3位自增数字编号}{YYYYMMDD}</code></p>
 </li>
@@ -9402,7 +8073,18 @@ hr {
 <li>
 <p>删改规则：业务流水号一经生成不可删除，不可修改。</p>
 </li>
-</ol><h4 id="单笔付款业务流水号">单笔付款业务流水号</h4><p>映射网商字段：</p><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-64">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">💰</div>
+                  <div>
+                    <div class="title">单笔付款业务流水号</div>
+                    <div class="breadcrumb">银行卡号和手机号脱敏规则</div>
+                  </div>
+                </div>
+                <div class="slide-body"><p>映射网商字段：</p><ol>
 <li>
 <p>协议代扣：代扣业务订单号，OutTradeNo</p>
 </li>
@@ -9438,20 +8120,18 @@ hr {
 <li>
 <p>删改规则：业务流水号一经生成不可删除，不可修改。</p>
 </li>
-</ol>
-  </div>
-</section>
-
-<section id="付款单状态" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💰</span>
-    <div>
-      <span class="section-number">66</span>
-      <h3 class="section-title">付款单状态</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <h4 id="协议代扣付款单状态">协议代扣付款单状态</h4><ol>
+</ol></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-65">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">💰</div>
+                  <div>
+                    <div class="title">协议代扣付款单状态</div>
+                    <div class="breadcrumb">银行卡号和手机号脱敏规则</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>包含协议代扣批量支付和单笔支付的业务订单。</p>
 </li>
@@ -9502,7 +8182,18 @@ hr {
 <td>代扣执行失败，资金未划转</td>
 </tr>
 </tbody>
-</table><h4 id="授权代付付款单状态">授权代付付款单状态</h4><ol>
+</table></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-66">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">💰</div>
+                  <div>
+                    <div class="title">授权代付付款单状态</div>
+                    <div class="breadcrumb">银行卡号和手机号脱敏规则</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>包含授权代付批量支付和单笔支付的业务订单。</p>
 </li>
@@ -9553,20 +8244,18 @@ hr {
 <td>代付执行失败，资金未划转</td>
 </tr>
 </tbody>
-</table>
-  </div>
-</section>
-
-<section id="批量付款批次状态" class="section-sub reveal">
-  <div class="section-header">
-    <span class="section-icon">💰</span>
-    <div>
-      <span class="section-number">67</span>
-      <h3 class="section-title">批量付款批次状态</h3>
-    </div>
-  </div>
-  <div class="section-body">
-    <ol>
+</table></div>
+              </div>
+            </div><div class="slide content-slide" id="slide-67">
+              <div class="slide-inner">
+                <div class="slide-header">
+                  <div class="icon">💰</div>
+                  <div>
+                    <div class="title">批量付款批次状态</div>
+                    <div class="breadcrumb">银行卡号和手机号脱敏规则</div>
+                  </div>
+                </div>
+                <div class="slide-body"><ol>
 <li>
 <p>批次状态包含了批次表格在本系统中的解析状态和该批次所有付款单在网商侧的付款状态。</p>
 </li>
@@ -9609,73 +8298,150 @@ hr {
 </tbody>
 </table>
 </li>
-</ol>
+</ol></div>
+              </div>
+            </div>
   </div>
-</section>
 
-</div>
+  <div class="nav-controls">
+    <button class="nav-btn" onclick="prevSlide()">◀</button>
+    <div class="dots"><div class="dot" onclick="goSlide(0)"></div><div class="dot" onclick="goSlide(1)"></div><div class="dot" onclick="goSlide(2)"></div><div class="dot" onclick="goSlide(3)"></div><div class="dot" onclick="goSlide(4)"></div><div class="dot" onclick="goSlide(5)"></div><div class="dot" onclick="goSlide(6)"></div><div class="dot" onclick="goSlide(7)"></div><div class="dot" onclick="goSlide(8)"></div><div class="dot" onclick="goSlide(9)"></div><div class="dot" onclick="goSlide(10)"></div><div class="dot" onclick="goSlide(11)"></div><div class="dot" onclick="goSlide(12)"></div><div class="dot" onclick="goSlide(13)"></div><div class="dot" onclick="goSlide(14)"></div><div class="dot" onclick="goSlide(15)"></div><div class="dot" onclick="goSlide(16)"></div><div class="dot" onclick="goSlide(17)"></div><div class="dot" onclick="goSlide(18)"></div><div class="dot" onclick="goSlide(19)"></div><div class="dot" onclick="goSlide(20)"></div><div class="dot" onclick="goSlide(21)"></div><div class="dot" onclick="goSlide(22)"></div><div class="dot" onclick="goSlide(23)"></div><div class="dot" onclick="goSlide(24)"></div><div class="dot" onclick="goSlide(25)"></div><div class="dot" onclick="goSlide(26)"></div><div class="dot" onclick="goSlide(27)"></div><div class="dot" onclick="goSlide(28)"></div><div class="dot" onclick="goSlide(29)"></div><div class="dot" onclick="goSlide(30)"></div><div class="dot" onclick="goSlide(31)"></div><div class="dot" onclick="goSlide(32)"></div><div class="dot" onclick="goSlide(33)"></div><div class="dot" onclick="goSlide(34)"></div><div class="dot" onclick="goSlide(35)"></div><div class="dot" onclick="goSlide(36)"></div><div class="dot" onclick="goSlide(37)"></div><div class="dot" onclick="goSlide(38)"></div><div class="dot" onclick="goSlide(39)"></div><div class="dot" onclick="goSlide(40)"></div><div class="dot" onclick="goSlide(41)"></div><div class="dot" onclick="goSlide(42)"></div><div class="dot" onclick="goSlide(43)"></div><div class="dot" onclick="goSlide(44)"></div><div class="dot" onclick="goSlide(45)"></div><div class="dot" onclick="goSlide(46)"></div><div class="dot" onclick="goSlide(47)"></div><div class="dot" onclick="goSlide(48)"></div><div class="dot" onclick="goSlide(49)"></div><div class="dot" onclick="goSlide(50)"></div><div class="dot" onclick="goSlide(51)"></div><div class="dot" onclick="goSlide(52)"></div><div class="dot" onclick="goSlide(53)"></div><div class="dot" onclick="goSlide(54)"></div><div class="dot" onclick="goSlide(55)"></div><div class="dot" onclick="goSlide(56)"></div><div class="dot" onclick="goSlide(57)"></div><div class="dot" onclick="goSlide(58)"></div><div class="dot" onclick="goSlide(59)"></div><div class="dot" onclick="goSlide(60)"></div><div class="dot" onclick="goSlide(61)"></div><div class="dot" onclick="goSlide(62)"></div><div class="dot" onclick="goSlide(63)"></div><div class="dot" onclick="goSlide(64)"></div><div class="dot" onclick="goSlide(65)"></div><div class="dot" onclick="goSlide(66)"></div><div class="dot" onclick="goSlide(67)"></div><div class="dot" onclick="goSlide(68)"></div></div>
+    <button class="nav-btn" onclick="nextSlide()">▶</button>
+    <div class="slide-counter">1 / 69</div>
+  </div>
 
-<div id="footer">
-  Basalt OS · 清算分账管理系统需求文档
-</div>
+  <button class="fullscreen-btn" onclick="toggleFullscreen()" title="全屏 (F)">⛶</button>
 
-<button id="back-to-top" aria-label="回到顶部">↑</button>
+  <div class="keyboard-hint">
+    <kbd>←</kbd> <kbd>→</kbd> 切换 &nbsp; <kbd>F</kbd> 全屏 &nbsp; <kbd>Home</kbd> <kbd>End</kbd> 首尾
+  </div>
 
-<script>
-// Progress bar
-var progressBar = document.getElementById('progress-bar');
-window.addEventListener('scroll', function() {
-  var h = document.documentElement.scrollHeight - window.innerHeight;
-  progressBar.style.width = (h > 0 ? window.scrollY / h * 100 : 0) + '%';
-});
+  <script>
+let currentSlide = 0;
+let totalSlides = 0;
+let isTransitioning = false;
+let touchStartX = 0;
+let touchStartY = 0;
 
-// Nav scroll effect
-var nav = document.getElementById('nav');
-window.addEventListener('scroll', function() {
-  nav.classList.toggle('scrolled', window.scrollY > 40);
-});
+function init() {
+  totalSlides = document.querySelectorAll('.slide').length;
+  showSlide(0);
+  setTimeout(() => {
+    const hint = document.querySelector('.keyboard-hint');
+    if (hint) hint.style.opacity = '0';
+  }, 4000);
+}
 
-// Active nav link
-var navLinks = document.querySelectorAll('.nav-link');
-var headings = document.querySelectorAll('h1[id], h2[id], h3[id]');
-window.addEventListener('scroll', function() {
-  var current = '';
-  headings.forEach(function(h) {
-    if (window.scrollY >= h.offsetTop - 120) current = h.id;
+function showSlide(index) {
+  if (index < 0 || index >= totalSlides || isTransitioning) return;
+  isTransitioning = true;
+
+  const slides = document.querySelectorAll('.slide');
+  const direction = index > currentSlide ? 1 : -1;
+
+  // Exit current
+  slides[currentSlide].classList.remove('active');
+  slides[currentSlide].classList.add(direction > 0 ? 'exit-left' : '');
+  if (direction < 0) {
+    slides[currentSlide].style.transform = 'translateX(60px)';
+    slides[currentSlide].style.opacity = '0';
+  }
+
+  // Enter new
+  const prev = currentSlide;
+  currentSlide = index;
+
+  // Reset new slide position
+  slides[currentSlide].classList.remove('exit-left');
+  slides[currentSlide].style.transform = '';
+  slides[currentSlide].style.opacity = '';
+  slides[currentSlide].classList.add('active');
+
+  // Scroll content to top
+  const body = slides[currentSlide].querySelector('.slide-body');
+  if (body) body.scrollTop = 0;
+
+  updateProgress();
+  updateDots();
+  updateCounter();
+
+  setTimeout(() => {
+    isTransitioning = false;
+    slides[prev].classList.remove('exit-left');
+    slides[prev].style.transform = '';
+    slides[prev].style.opacity = '';
+  }, 450);
+}
+
+function nextSlide() { showSlide(currentSlide + 1); }
+function prevSlide() { showSlide(currentSlide - 1); }
+
+function updateProgress() {
+  const pct = ((currentSlide + 1) / totalSlides * 100).toFixed(1);
+  document.querySelector('.progress-bar').style.width = pct + '%';
+}
+
+function updateDots() {
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.classList.toggle('active', i === currentSlide);
   });
-  navLinks.forEach(function(a) {
-    a.classList.toggle('active', a.getAttribute('data-anchor') === current);
-  });
+}
+
+function updateCounter() {
+  document.querySelector('.slide-counter').textContent = (currentSlide + 1) + ' / ' + totalSlides;
+}
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+    e.preventDefault(); nextSlide();
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault(); prevSlide();
+  } else if (e.key === 'Home') {
+    e.preventDefault(); showSlide(0);
+  } else if (e.key === 'End') {
+    e.preventDefault(); showSlide(totalSlides - 1);
+  } else if (e.key === 'f' || e.key === 'F') {
+    toggleFullscreen();
+  }
 });
 
-// Smooth scroll
-navLinks.forEach(function(a) {
-  a.addEventListener('click', function(e) {
-    e.preventDefault();
-    var target = document.getElementById(a.getAttribute('data-anchor'));
-    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
-});
+// Touch
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
 
-// Back to top
-var btn = document.getElementById('back-to-top');
-window.addEventListener('scroll', function() {
-  btn.classList.toggle('visible', window.scrollY > 500);
-});
-btn.addEventListener('click', function() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+document.addEventListener('touchend', (e) => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+    dx < 0 ? nextSlide() : prevSlide();
+  }
+}, { passive: true });
 
-// Reveal on scroll
-var reveals = document.querySelectorAll('.reveal');
-var observer = new IntersectionObserver(function(entries) {
-  entries.forEach(function(entry) {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    }
-  });
-}, { threshold: 0.06 });
-reveals.forEach(function(el) { observer.observe(el); });
+// Mouse wheel (debounced)
+let wheelTimer = null;
+document.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  if (wheelTimer) return;
+  wheelTimer = setTimeout(() => { wheelTimer = null; }, 600);
+  e.deltaY > 0 ? nextSlide() : prevSlide();
+}, { passive: false });
+
+// Fullscreen
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+// Dot click
+function goSlide(i) { showSlide(i); }
+
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
