@@ -3,291 +3,430 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Basalt OS 需求文档</title>
+<title>Basalt OS · 需求文档</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
 
-  :root {
-    --primary: #2563eb;
-    --primary-light: #3b82f6;
-    --primary-lighter: #dbeafe;
-    --primary-bg: #eff6ff;
-    --text: #1e293b;
-    --text-secondary: #475569;
-    --border: #e2e8f0;
-    --bg: #ffffff;
-    --sidebar-bg: #f8fafc;
-    --code-bg: #1e293b;
-    --code-text: #e2e8f0;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08);
-    --radius: 8px;
-  }
+:root {
+  --bg: #f9f7f4;
+  --bg-warm: #f5f2ed;
+  --surface: #ffffff;
+  --surface-hover: #fffdfb;
+  --border: #e8e3dc;
+  --border-light: #efe9e1;
+  --text: #2c2a26;
+  --text-secondary: #5c5a55;
+  --text-muted: #9c9a94;
+  --accent: #c96442;
+  --accent-light: #f5ebe5;
+  --accent-hover: #b55838;
+  --shadow-sm: 0 1px 2px rgba(44,42,38,0.04);
+  --shadow-md: 0 2px 8px rgba(44,42,38,0.06);
+  --shadow-lg: 0 4px 20px rgba(44,42,38,0.08);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 
-  html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-                 "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", sans-serif;
-    color: var(--text);
-    background: var(--bg);
-    font-size: 15.5px;
-    line-height: 1.85;
-    -webkit-font-smoothing: antialiased;
-    display: flex;
-    min-height: 100vh;
-  }
+/* ── Progress bar ── */
+#progress-bar {
+  position: fixed; top: 0; left: 0; height: 3px;
+  background: var(--accent); z-index: 9999;
+  transition: width 0.2s ease-out; width: 0%;
+}
 
-  /* Progress bar */
-  #progress-bar {
-    position: fixed; top: 0; left: 0; height: 3px;
-    background: linear-gradient(90deg, var(--primary), var(--primary-light));
-    z-index: 9999; transition: width 0.15s; width: 0%;
-  }
+/* ── Navigation ── */
+#nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+  padding: 14px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(249,247,244,0.85);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid transparent;
+  transition: all 0.3s;
+}
+#nav.scrolled {
+  border-bottom-color: var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+.nav-brand {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 700; font-size: 17px; color: var(--text);
+  text-decoration: none; letter-spacing: -0.01em;
+}
+.nav-brand .logo {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 16px; font-weight: 800;
+}
+.nav-links {
+  display: flex; gap: 2px; align-items: center; overflow-x: auto;
+  max-width: 70%; -ms-overflow-style: none; scrollbar-width: none;
+}
+.nav-links::-webkit-scrollbar { display: none; }
+.nav-link {
+  padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 500;
+  color: var(--text-muted); text-decoration: none;
+  transition: all 0.15s; white-space: nowrap;
+  flex-shrink: 0;
+}
+.nav-link:hover { color: var(--text); background: rgba(0,0,0,0.03); }
+.nav-link.active { color: var(--text); background: var(--accent-light); font-weight: 600; }
 
-  /* Sidebar */
-  #sidebar {
-    position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
-    background: var(--sidebar-bg);
-    border-right: 1px solid var(--border);
-    overflow-y: auto; padding: 24px 0 40px;
-    z-index: 100;
-    transition: transform 0.3s ease;
-  }
-  #sidebar h2 {
-    font-size: 1em; color: var(--primary); padding: 0 20px 12px;
-    border-bottom: 1px solid var(--border); margin-bottom: 12px;
-    font-weight: 700; letter-spacing: 0.02em;
-  }
-  .toc-list { list-style: none; padding: 0; }
-  .toc-list li { list-style: none; }
-  .toc-list a {
-    display: block; padding: 6px 20px; font-size: 13.5px;
-    color: var(--text-secondary); text-decoration: none;
-    border-left: 3px solid transparent;
-    transition: all 0.15s;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .toc-list a:hover,
-  .toc-list a.active {
-    color: var(--primary); background: var(--primary-lighter);
-    border-left-color: var(--primary);
-  }
+/* ── Hero ── */
+#hero {
+  min-height: 75vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 120px 24px 64px;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--accent); padding: 6px 16px; border-radius: 100px;
+  font-size: 13px; font-weight: 600; margin-bottom: 24px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.hero-eyebrow .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  /* Main content */
-  #main {
-    margin-left: 280px; flex: 1; max-width: 860px;
-    padding: 48px 48px 120px;
-  }
+.hero-title {
+  font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800;
+  line-height: 1.1; margin-bottom: 20px;
+  color: var(--text); letter-spacing: -0.03em;
+}
+.hero-title span {
+  color: var(--accent);
+}
+.hero-desc {
+  font-size: clamp(0.95rem, 1.5vw, 1.1rem); color: var(--text-secondary);
+  max-width: 540px; line-height: 1.8; margin-bottom: 36px;
+}
+.hero-meta {
+  display: flex; gap: 32px; flex-wrap: wrap; justify-content: center;
+}
+.hero-meta-item {
+  text-align: center;
+}
+.hero-meta-item .val {
+  font-size: 1.8rem; font-weight: 800; color: var(--text);
+}
+.hero-meta-item .lab {
+  font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: 2px;
+}
 
-  h1 {
-    font-size: 2em; font-weight: 800; color: #0f172a;
-    border-bottom: 3px solid var(--primary);
-    padding-bottom: 14px; margin: 48px 0 24px;
-    letter-spacing: -0.02em;
-  }
-  h1:first-child { margin-top: 0; }
-  h2 {
-    font-size: 1.55em; font-weight: 700; color: #1e293b;
-    border-bottom: 2px solid var(--primary-lighter);
-    padding-bottom: 10px; margin: 40px 0 18px;
-  }
-  h3 { font-size: 1.25em; font-weight: 600; color: #334155; margin: 32px 0 14px; }
-  h4 { font-size: 1.08em; font-weight: 600; color: #475569; margin: 24px 0 10px; }
-  h5 { font-size: 1em; font-weight: 600; color: #64748b; margin: 20px 0 8px; }
-  h6 { font-size: 0.92em; font-weight: 600; color: #94a3b8; margin: 16px 0 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+/* ── Content ── */
+#content {
+  max-width: 820px; margin: 0 auto;
+  padding: 0 24px 120px;
+}
 
-  p { margin: 12px 0; color: var(--text-secondary); }
-  a { color: var(--primary); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
-  a:hover { border-bottom-color: var(--primary); }
+/* ── Section hero (h1) ── */
+.section-hero {
+  margin: 64px 0 32px;
+}
+.section-hero .section-header {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 28px;
+}
+.section-hero .section-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: var(--accent-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; flex-shrink: 0;
+  border: 1px solid var(--border-light);
+}
+.section-hero .section-number {
+  font-size: 12px; font-weight: 700; color: var(--accent);
+  letter-spacing: 0.08em;
+}
+.section-hero .section-title {
+  font-size: 1.7rem; font-weight: 800; color: var(--text);
+  letter-spacing: -0.02em; margin: 2px 0 0;
+}
 
-  table {
-    width: 100%; border-collapse: collapse; margin: 24px 0;
-    font-size: 14.5px; border-radius: var(--radius); overflow: hidden;
-    border: 1px solid var(--border);
-  }
-  th {
-    background: var(--primary); color: #fff; font-weight: 600;
-    padding: 10px 14px; text-align: left; font-size: 14px;
-  }
-  td { padding: 9px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
-  tr:nth-child(even) td { background: #f8fafc; }
-  tr:hover td { background: var(--primary-lighter); }
+/* ── Section card (h2) ── */
+.section-card {
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  margin: 28px 0;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.25s;
+}
+.section-card:hover {
+  box-shadow: var(--shadow-md);
+}
+.section-card .section-header {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 20px; padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+.section-card .section-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--accent-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.section-card .section-number {
+  font-size: 11px; font-weight: 700; color: var(--accent);
+  letter-spacing: 0.08em;
+}
+.section-card .section-title {
+  font-size: 1.2rem; font-weight: 700; color: var(--text);
+  margin: 2px 0 0;
+}
 
-  code {
-    font-family: "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
-    background: var(--primary-lighter); color: var(--primary);
-    padding: 2px 7px; border-radius: 5px; font-size: 0.88em; font-weight: 500;
-  }
-  pre {
-    background: var(--code-bg); color: var(--code-text);
-    border-radius: var(--radius); padding: 20px 24px;
-    margin: 20px 0; overflow-x: auto; font-size: 14px; line-height: 1.7;
-    border: 1px solid #334155;
-  }
-  pre code { background: none; color: inherit; padding: 0; border-radius: 0; font-weight: 400; }
+/* ── Section sub (h3+) ── */
+.section-sub {
+  margin: 20px 0;
+  padding-left: 16px;
+  border-left: 2px solid var(--border);
+}
+.section-sub .section-header { margin-bottom: 12px; }
+.section-sub .section-icon { display: none; }
+.section-sub .section-number {
+  font-size: 11px; font-weight: 600; color: var(--text-muted);
+}
+.section-sub .section-title {
+  font-size: 1.05rem; font-weight: 600; color: var(--text);
+  margin: 2px 0 0;
+}
 
-  blockquote {
-    border-left: 4px solid var(--primary);
-    margin: 20px 0; padding: 12px 20px;
-    background: var(--primary-bg); border-radius: 0 var(--radius) var(--radius) 0;
-    color: var(--text-secondary); font-style: italic;
-  }
+.section-body {
+  line-height: 1.85;
+}
+.section-body p {
+  margin: 12px 0; color: var(--text-secondary);
+}
 
-  ul, ol { padding-left: 26px; margin: 10px 0; }
-  li { margin: 6px 0; color: var(--text-secondary); }
-  li > ul, li > ol { margin: 4px 0; }
+/* ── Intro block ── */
+.intro-block {
+  margin: 20px 0; padding: 20px 24px;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
 
-  hr { border: none; height: 1px; background: linear-gradient(to right, transparent, var(--border), transparent); margin: 40px 0; }
+/* ── Table ── */
+table {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  margin: 16px 0; font-size: 14px;
+  border-radius: var(--radius-sm); overflow: hidden;
+  border: 1px solid var(--border);
+}
+th {
+  background: var(--bg-warm); font-weight: 600;
+  padding: 10px 14px; text-align: left; font-size: 13px;
+  color: var(--text); border-bottom: 2px solid var(--border);
+}
+td {
+  padding: 9px 14px; border-bottom: 1px solid var(--border-light);
+  vertical-align: top; color: var(--text-secondary);
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--accent-light); }
 
-  strong { font-weight: 600; color: #0f172a; }
-  del { color: #94a3b8; text-decoration: line-through; }
+/* ── Code ── */
+code {
+  font-family: 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
+  background: var(--bg-warm);
+  color: var(--accent);
+  padding: 2px 7px; border-radius: 5px;
+  font-size: 0.87em; font-weight: 500;
+  border: 1px solid var(--border-light);
+}
+pre {
+  background: #1c1917; color: #e7e5e4;
+  border-radius: var(--radius-sm); padding: 20px 24px;
+  margin: 16px 0; overflow-x: auto; font-size: 13.5px; line-height: 1.7;
+  border: 1px solid #292524;
+}
+pre code {
+  background: none; color: inherit; padding: 0;
+  border-radius: 0; border: none; font-weight: 400;
+}
 
-  /* Back to top */
-  #back-to-top {
-    position: fixed; bottom: 32px; right: 32px;
-    width: 44px; height: 44px; border-radius: 50%;
-    background: var(--primary); color: #fff; border: none;
-    cursor: pointer; font-size: 20px; line-height: 44px; text-align: center;
-    box-shadow: 0 4px 12px rgba(37,99,235,0.35);
-    opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s;
-    z-index: 200;
-  }
-  #back-to-top.visible { opacity: 1; pointer-events: auto; }
-  #back-to-top:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37,99,235,0.45); }
+/* ── Blockquote ── */
+blockquote {
+  border-left: 3px solid var(--accent);
+  margin: 16px 0; padding: 12px 20px;
+  background: var(--accent-light);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--text-secondary);
+}
 
-  /* Mobile toggle */
-  #menu-toggle {
-    display: none; position: fixed; top: 12px; left: 12px; z-index: 200;
-    width: 40px; height: 40px; border-radius: var(--radius);
-    background: var(--primary); color: #fff; border: none;
-    cursor: pointer; font-size: 20px;
-  }
+ul, ol { padding-left: 24px; margin: 10px 0; }
+li { margin: 5px 0; color: var(--text-secondary); }
 
-  @media (max-width: 1024px) {
-    #sidebar { transform: translateX(-100%); }
-    #sidebar.open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,0.15); }
-    #main { margin-left: 0; padding: 48px 24px 80px; }
-    #menu-toggle { display: block; }
-  }
+a { color: var(--accent); text-decoration: none; font-weight: 500; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
 
+strong { font-weight: 600; color: var(--text); }
+del { color: var(--text-muted); text-decoration: line-through; }
+
+hr {
+  border: none; height: 1px; margin: 40px 0;
+  background: var(--border-light);
+}
+
+/* ── Reveal ── */
+.reveal {
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.visible {
+  opacity: 1; transform: translateY(0);
+}
+
+/* ── Back to top ── */
+#back-to-top {
+  position: fixed; bottom: 28px; right: 28px;
+  width: 42px; height: 42px; border-radius: 10px;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border);
+  cursor: pointer; font-size: 18px; text-align: center; line-height: 42px;
+  box-shadow: var(--shadow-md);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+  z-index: 200;
+}
+#back-to-top.visible { opacity: 1; pointer-events: auto; }
+#back-to-top:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+/* ── Footer ── */
+#footer {
+  text-align: center; padding: 40px 24px 56px;
+  color: var(--text-muted); font-size: 13px;
+  border-top: 1px solid var(--border-light);
+  max-width: 820px; margin: 0 auto;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  #hero { padding: 100px 16px 48px; min-height: 65vh; }
+  .hero-meta { gap: 20px; }
+  #content { padding: 0 16px 80px; }
+  .section-card { padding: 20px 18px; }
+  .section-hero .section-title { font-size: 1.3rem; }
+}
 </style>
 </head>
 <body>
 
 <div id="progress-bar"></div>
-<button id="menu-toggle" aria-label="Toggle menu">☰</button>
 
-<nav id="sidebar">
-  <h2>📋 文档目录</h2>
-  <ul class="toc-list">
-  <li style="padding-left:0px"><a href="#01_BasaltOS需求文档" data-anchor="01_BasaltOS需求文档">01_Basalt OS需求文档</a></li>
-  <li style="padding-left:0px"><a href="#清算分账" data-anchor="清算分账">清算分账</a></li>
-  <li style="padding-left:16px"><a href="#品牌专户" data-anchor="品牌专户">品牌专户</a></li>
-  <li style="padding-left:32px"><a href="#品牌专户-2" data-anchor="品牌专户-2">品牌专户</a></li>
-  <li style="padding-left:32px"><a href="#来账明细" data-anchor="来账明细">来账明细</a></li>
-  <li style="padding-left:16px"><a href="#总部公司" data-anchor="总部公司">总部公司</a></li>
-  <li style="padding-left:32px"><a href="#总部公司-2" data-anchor="总部公司-2">总部公司</a></li>
-  <li style="padding-left:48px"><a href="#总部公司列表" data-anchor="总部公司列表">总部公司列表</a></li>
-  <li style="padding-left:32px"><a href="#总部公司商户" data-anchor="总部公司商户">总部公司商户</a></li>
-  <li style="padding-left:48px"><a href="#总部公司商户列表" data-anchor="总部公司商户列表">总部公司商户列表</a></li>
-  <li style="padding-left:48px"><a href="#商户详情" data-anchor="商户详情">商户详情</a></li>
-  <li style="padding-left:16px"><a href="#区域公司" data-anchor="区域公司">区域公司</a></li>
-  <li style="padding-left:32px"><a href="#区域公司-2" data-anchor="区域公司-2">区域公司</a></li>
-  <li style="padding-left:32px"><a href="#区域公司商户" data-anchor="区域公司商户">区域公司商户</a></li>
-  <li style="padding-left:48px"><a href="#区域公司商户列表" data-anchor="区域公司商户列表">区域公司商户列表</a></li>
-  <li style="padding-left:48px"><a href="#商户详情-2" data-anchor="商户详情-2">商户详情</a></li>
-  <li style="padding-left:16px"><a href="#门店" data-anchor="门店">门店</a></li>
-  <li style="padding-left:32px"><a href="#门店列表" data-anchor="门店列表">门店列表</a></li>
-  <li style="padding-left:32px"><a href="#门店商户" data-anchor="门店商户">门店商户</a></li>
-  <li style="padding-left:48px"><a href="#门店商户列表" data-anchor="门店商户列表">门店商户列表</a></li>
-  <li style="padding-left:48px"><a href="#商户详情-3" data-anchor="商户详情-3">商户详情</a></li>
-  <li style="padding-left:16px"><a href="#供应商" data-anchor="供应商">供应商</a></li>
-  <li style="padding-left:16px"><a href="#清算订单三联" data-anchor="清算订单三联">清算订单（三联）</a></li>
-  <li style="padding-left:16px"><a href="#清算订单收钱吧" data-anchor="清算订单收钱吧">清算订单（收钱吧）</a></li>
-  <li style="padding-left:32px"><a href="#清算订单" data-anchor="清算订单">清算订单</a></li>
-  <li style="padding-left:32px"><a href="#POS设置" data-anchor="POS设置">POS设置</a></li>
-  <li style="padding-left:16px"><a href="#清算文件" data-anchor="清算文件">清算文件</a></li>
-  <li style="padding-left:16px"><a href="#清算批次" data-anchor="清算批次">清算批次</a></li>
-  <li style="padding-left:32px"><a href="#新建批次" data-anchor="新建批次">新建批次</a></li>
-  <li style="padding-left:32px"><a href="#批次管理批次列表" data-anchor="批次管理批次列表">批次管理（批次列表）</a></li>
-  <li style="padding-left:32px"><a href="#批次详情" data-anchor="批次详情">批次详情</a></li>
-  <li style="padding-left:32px"><a href="#编辑批次" data-anchor="编辑批次">编辑批次</a></li>
-  <li style="padding-left:16px"><a href="#签约授权" data-anchor="签约授权">签约授权</a></li>
-  <li style="padding-left:32px"><a href="#新增修改授权代付合约-授权代付合约产生" data-anchor="新增修改授权代付合约-授权代付合约产生">新增/修改授权代付合约-授权代付合约产生</a></li>
-  <li style="padding-left:32px"><a href="#合约管理" data-anchor="合约管理">合约管理</a></li>
-  <li style="padding-left:48px"><a href="#合约列表" data-anchor="合约列表">合约列表</a></li>
-  <li style="padding-left:48px"><a href="#合约详情" data-anchor="合约详情">合约详情</a></li>
-  <li style="padding-left:32px"><a href="#授权记录授权申请单" data-anchor="授权记录授权申请单">授权记录（授权申请单）</a></li>
-  <li style="padding-left:48px"><a href="#授权记录申请单的产生" data-anchor="授权记录申请单的产生">授权记录（申请单）的产生</a></li>
-  <li style="padding-left:48px"><a href="#授权记录列表" data-anchor="授权记录列表">授权记录列表</a></li>
-  <li style="padding-left:48px"><a href="#授权记录详情申请单详情" data-anchor="授权记录详情申请单详情">授权记录详情（申请单详情）</a></li>
-  <li style="padding-left:16px"><a href="#付款" data-anchor="付款">付款</a></li>
-  <li style="padding-left:32px"><a href="#付款记录" data-anchor="付款记录">付款记录</a></li>
-  <li style="padding-left:32px"><a href="#付款单详情" data-anchor="付款单详情">付款单详情</a></li>
-  <li style="padding-left:48px"><a href="#协议代扣" data-anchor="协议代扣">协议代扣</a></li>
-  <li style="padding-left:48px"><a href="#授权代付" data-anchor="授权代付">授权代付</a></li>
-  <li style="padding-left:32px"><a href="#批量付款" data-anchor="批量付款">批量付款</a></li>
-  <li style="padding-left:32px"><a href="#单笔付款" data-anchor="单笔付款">单笔付款</a></li>
-  <li style="padding-left:32px"><a href="#发起付款接口调用" data-anchor="发起付款接口调用">发起付款接口调用</a></li>
-  <li style="padding-left:48px"><a href="#协议代扣-2" data-anchor="协议代扣-2">协议代扣</a></li>
-  <li style="padding-left:48px"><a href="#授权代付-2" data-anchor="授权代付-2">授权代付</a></li>
-  <li style="padding-left:0px"><a href="#平台管理" data-anchor="平台管理">平台管理</a></li>
-  <li style="padding-left:16px"><a href="#区域划分" data-anchor="区域划分">区域划分</a></li>
-  <li style="padding-left:16px"><a href="#业务属性" data-anchor="业务属性">业务属性</a></li>
-  <li style="padding-left:16px"><a href="#角色" data-anchor="角色">角色</a></li>
-  <li style="padding-left:16px"><a href="#账户" data-anchor="账户">账户</a></li>
-  <li style="padding-left:0px"><a href="#全局规则" data-anchor="全局规则">全局规则</a></li>
-  <li style="padding-left:16px"><a href="#公司和门店编码生成规则" data-anchor="公司和门店编码生成规则">公司和门店编码生成规则</a></li>
-  <li style="padding-left:32px"><a href="#总部公司编码" data-anchor="总部公司编码">总部公司编码</a></li>
-  <li style="padding-left:32px"><a href="#区域公司编码" data-anchor="区域公司编码">区域公司编码</a></li>
-  <li style="padding-left:32px"><a href="#门店编码" data-anchor="门店编码">门店编码</a></li>
-  <li style="padding-left:32px"><a href="#外部商户号商户编码" data-anchor="外部商户号商户编码">外部商户号（商户编码）</a></li>
-  <li style="padding-left:16px"><a href="#商户入驻状态" data-anchor="商户入驻状态">商户入驻状态</a></li>
-  <li style="padding-left:16px"><a href="#清算订单状态" data-anchor="清算订单状态">清算订单状态</a></li>
-  <li style="padding-left:32px"><a href="#POS机绑定状态" data-anchor="POS机绑定状态">POS机绑定状态</a></li>
-  <li style="padding-left:16px"><a href="#清算批次号生成规则" data-anchor="清算批次号生成规则">清算批次号生成规则</a></li>
-  <li style="padding-left:16px"><a href="#清算文件状态" data-anchor="清算文件状态">清算文件状态</a></li>
-  <li style="padding-left:16px"><a href="#清算批次状态" data-anchor="清算批次状态">清算批次状态</a></li>
-  <li style="padding-left:16px"><a href="#系统流水号" data-anchor="系统流水号">系统流水号</a></li>
-  <li style="padding-left:16px"><a href="#协议代扣-3" data-anchor="协议代扣-3">协议代扣</a></li>
-  <li style="padding-left:32px"><a href="#协议代扣申请单类型" data-anchor="协议代扣申请单类型">协议代扣申请单类型</a></li>
-  <li style="padding-left:32px"><a href="#协议代扣申请单状态" data-anchor="协议代扣申请单状态">协议代扣申请单状态</a></li>
-  <li style="padding-left:32px"><a href="#协议代扣合约状态" data-anchor="协议代扣合约状态">协议代扣合约状态</a></li>
-  <li style="padding-left:16px"><a href="#授权代付-3" data-anchor="授权代付-3">授权代付</a></li>
-  <li style="padding-left:32px"><a href="#授权代付业务子场景" data-anchor="授权代付业务子场景">授权代付业务子场景</a></li>
-  <li style="padding-left:32px"><a href="#授权代付申请单类型" data-anchor="授权代付申请单类型">授权代付申请单类型</a></li>
-  <li style="padding-left:32px"><a href="#授权代付申请单状态" data-anchor="授权代付申请单状态">授权代付申请单状态</a></li>
-  <li style="padding-left:32px"><a href="#授权代付合约状态" data-anchor="授权代付合约状态">授权代付合约状态</a></li>
-  <li style="padding-left:16px"><a href="#银行卡号和手机号脱敏规则" data-anchor="银行卡号和手机号脱敏规则">银行卡号和手机号脱敏规则</a></li>
-  <li style="padding-left:16px"><a href="#对外付款" data-anchor="对外付款">对外付款</a></li>
-  <li style="padding-left:32px"><a href="#业务流水号" data-anchor="业务流水号">业务流水号</a></li>
-  <li style="padding-left:48px"><a href="#批量付款业务流水号" data-anchor="批量付款业务流水号">批量付款业务流水号</a></li>
-  <li style="padding-left:48px"><a href="#单笔付款业务流水号" data-anchor="单笔付款业务流水号">单笔付款业务流水号</a></li>
-  <li style="padding-left:32px"><a href="#付款单状态" data-anchor="付款单状态">付款单状态</a></li>
-  <li style="padding-left:48px"><a href="#协议代扣付款单状态" data-anchor="协议代扣付款单状态">协议代扣付款单状态</a></li>
-  <li style="padding-left:48px"><a href="#授权代付付款单状态" data-anchor="授权代付付款单状态">授权代付付款单状态</a></li>
-  <li style="padding-left:32px"><a href="#批量付款批次状态" data-anchor="批量付款批次状态">批量付款批次状态</a></li>
-</ul>
+<nav id="nav">
+  <a href="#hero" class="nav-brand">
+    <div class="logo">B</div>
+    Basalt OS
+  </a>
+  <div class="nav-links">
+    <a href="#01_BasaltOS需求文档" data-anchor="01_BasaltOS需求文档" class="nav-link" style="padding-left:16px">01_Basalt OS需求文档</a>
+<a href="#清算分账" data-anchor="清算分账" class="nav-link" style="padding-left:16px">清算分账</a>
+<a href="#品牌专户" data-anchor="品牌专户" class="nav-link" style="padding-left:28px">品牌专户</a>
+<a href="#总部公司" data-anchor="总部公司" class="nav-link" style="padding-left:28px">总部公司</a>
+<a href="#区域公司" data-anchor="区域公司" class="nav-link" style="padding-left:28px">区域公司</a>
+<a href="#门店" data-anchor="门店" class="nav-link" style="padding-left:28px">门店</a>
+<a href="#供应商" data-anchor="供应商" class="nav-link" style="padding-left:28px">供应商</a>
+<a href="#清算订单三联" data-anchor="清算订单三联" class="nav-link" style="padding-left:28px">清算订单（三联）</a>
+<a href="#清算订单收钱吧" data-anchor="清算订单收钱吧" class="nav-link" style="padding-left:28px">清算订单（收钱吧）</a>
+<a href="#清算文件" data-anchor="清算文件" class="nav-link" style="padding-left:28px">清算文件</a>
+<a href="#清算批次" data-anchor="清算批次" class="nav-link" style="padding-left:28px">清算批次</a>
+<a href="#签约授权" data-anchor="签约授权" class="nav-link" style="padding-left:28px">签约授权</a>
+<a href="#付款" data-anchor="付款" class="nav-link" style="padding-left:28px">付款</a>
+<a href="#平台管理" data-anchor="平台管理" class="nav-link" style="padding-left:16px">平台管理</a>
+<a href="#区域划分" data-anchor="区域划分" class="nav-link" style="padding-left:28px">区域划分</a>
+<a href="#业务属性" data-anchor="业务属性" class="nav-link" style="padding-left:28px">业务属性</a>
+<a href="#角色" data-anchor="角色" class="nav-link" style="padding-left:28px">角色</a>
+<a href="#账户" data-anchor="账户" class="nav-link" style="padding-left:28px">账户</a>
+<a href="#全局规则" data-anchor="全局规则" class="nav-link" style="padding-left:16px">全局规则</a>
+<a href="#公司和门店编码生成规则" data-anchor="公司和门店编码生成规则" class="nav-link" style="padding-left:28px">公司和门店编码生成规则</a>
+<a href="#商户入驻状态" data-anchor="商户入驻状态" class="nav-link" style="padding-left:28px">商户入驻状态</a>
+<a href="#清算订单状态" data-anchor="清算订单状态" class="nav-link" style="padding-left:28px">清算订单状态</a>
+<a href="#清算批次号生成规则" data-anchor="清算批次号生成规则" class="nav-link" style="padding-left:28px">清算批次号生成规则</a>
+<a href="#清算文件状态" data-anchor="清算文件状态" class="nav-link" style="padding-left:28px">清算文件状态</a>
+<a href="#清算批次状态" data-anchor="清算批次状态" class="nav-link" style="padding-left:28px">清算批次状态</a>
+<a href="#系统流水号" data-anchor="系统流水号" class="nav-link" style="padding-left:28px">系统流水号</a>
+<a href="#协议代扣-3" data-anchor="协议代扣-3" class="nav-link" style="padding-left:28px">协议代扣</a>
+<a href="#授权代付-3" data-anchor="授权代付-3" class="nav-link" style="padding-left:28px">授权代付</a>
+<a href="#银行卡号和手机号脱敏规则" data-anchor="银行卡号和手机号脱敏规则" class="nav-link" style="padding-left:28px">银行卡号和手机号脱敏规则</a>
+<a href="#对外付款" data-anchor="对外付款" class="nav-link" style="padding-left:28px">对外付款</a>
+
+  </div>
 </nav>
 
-<div id="main">
-<h1 id="01_BasaltOS需求文档">01_Basalt OS需求文档</h1>
-<p>术语表：<a href="https://bcno92iwldd2.feishu.cn/docx/YFAAdZmp8oeb9yxvjOYcTPeXn7b?from=from_copylink">Basalt_Finance - 术语对照表</a></p>
-<h1 id="清算分账">清算分账</h1>
-<p>本文档需配合产品原型阅读。</p>
-<p>原型：</p>
-<ul>
+<section id="hero">
+  <div class="hero-eyebrow">
+    <span class="dot"></span>
+    清算分账管理系统
+  </div>
+  <h1 class="hero-title">Basalt OS<br><span>需求文档</span></h1>
+  <p class="hero-desc">零售行业清算分账管理系统的完整产品需求定义，涵盖品牌专户、清算订单、清算文件、清算批次、签约授权等核心模块。</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <div class="val">7+</div>
+      <div class="lab">核心模块</div>
+    </div>
+    <div class="hero-meta-item">
+      <div class="val">4</div>
+      <div class="lab">版本迭代</div>
+    </div>
+    <div class="hero-meta-item">
+      <div class="val">50+</div>
+      <div class="lab">接口定义</div>
+    </div>
+  </div>
+</section>
+
+<div id="content">
+  
+<section id="01_BasaltOS需求文档" class="section-hero reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">01</span>
+      <h1 class="section-title">01_Basalt OS需求文档</h1>
+    </div>
+  </div>
+  <div class="section-body">
+    <p>术语表：<a href="https://bcno92iwldd2.feishu.cn/docx/YFAAdZmp8oeb9yxvjOYcTPeXn7b?from=from_copylink">Basalt_Finance - 术语对照表</a></p>
+  </div>
+</section>
+
+<section id="清算分账" class="section-hero reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">02</span>
+      <h1 class="section-title">清算分账</h1>
+    </div>
+  </div>
+  <div class="section-body">
+    <p>本文档需配合产品原型阅读。</p><p>原型：</p><ul>
 <li>
 <p>CoDesign：https://codesign.qq.com/s/671147766598162</p>
 </li>
 <li>
 <p>AxHub：https://axhub.im/ax9/71215a188e6b6ee5</p>
 </li>
-</ul>
-<p>本文档仅描述产品原型中关键功能的逻辑和规则，详细功能列表、功能优先级、归属版本迭代等以<a href="https://bcno92iwldd2.feishu.cn/base/Okl3b4f5pavTIBsiUekcAUhQnzd?from=from_copylink">Basalt_Finance开发看板</a>为准。</p>
-<p>包含版本迭代：版本与需求管理详见<a href="https://bcno92iwldd2.feishu.cn/base/Okl3b4f5pavTIBsiUekcAUhQnzd?from=from_copylink">Basalt_Finance开发看板</a></p>
-<ul>
+</ul><p>本文档仅描述产品原型中关键功能的逻辑和规则，详细功能列表、功能优先级、归属版本迭代等以<a href="https://bcno92iwldd2.feishu.cn/base/Okl3b4f5pavTIBsiUekcAUhQnzd?from=from_copylink">Basalt_Finance开发看板</a>为准。</p><p>包含版本迭代：版本与需求管理详见<a href="https://bcno92iwldd2.feishu.cn/base/Okl3b4f5pavTIBsiUekcAUhQnzd?from=from_copylink">Basalt_Finance开发看板</a></p><ul>
 <li>
 <p><code>0.5.0</code>开发中</p>
 </li>
@@ -301,12 +440,32 @@
 <p><code>0.1.0</code>已完成</p>
 </li>
 </ul>
-<h2 id="品牌专户">品牌专户</h2>
-<p>ISV名称：浙江可柔品牌管理有限公司</p>
-<p>isvOrgId：202211000000000004381</p>
-<p>AppId：2026042000004278</p>
-<h3 id="品牌专户-2">品牌专户</h3>
-<ol>
+  </div>
+</section>
+
+<section id="品牌专户" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">🏦</span>
+    <div>
+      <span class="section-number">03</span>
+      <h2 class="section-title">品牌专户</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <p>ISV名称：浙江可柔品牌管理有限公司</p><p>isvOrgId：202211000000000004381</p><p>AppId：2026042000004278</p>
+  </div>
+</section>
+
+<section id="品牌专户-2" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">🏦</span>
+    <div>
+      <span class="section-number">04</span>
+      <h3 class="section-title">品牌专户</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>更新时间：数据更新时间，精确到秒，格式为「YYYY-MM-DD HH:mm:ss」。</p>
 <ol>
@@ -380,8 +539,19 @@
 </ol>
 </li>
 </ol>
-<h3 id="来账明细">来账明细</h3>
-<ol>
+  </div>
+</section>
+
+<section id="来账明细" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">05</span>
+      <h3 class="section-title">来账明细</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>筛选</p>
 <ol>
@@ -450,10 +620,32 @@
 </ol>
 </li>
 </ol>
-<h2 id="总部公司">总部公司</h2>
-<h3 id="总部公司-2">总部公司</h3>
-<h4 id="总部公司列表">总部公司列表</h4>
-<ol>
+  </div>
+</section>
+
+<section id="总部公司" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">🏢</span>
+    <div>
+      <span class="section-number">06</span>
+      <h2 class="section-title">总部公司</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    
+  </div>
+</section>
+
+<section id="总部公司-2" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">🏢</span>
+    <div>
+      <span class="section-number">07</span>
+      <h3 class="section-title">总部公司</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <h4 id="总部公司列表">总部公司列表</h4><ol>
 <li>
 <p>筛选总部公司</p>
 <ol>
@@ -669,9 +861,19 @@
 </ol>
 </li>
 </ol>
-<h3 id="总部公司商户">总部公司商户</h3>
-<h4 id="总部公司商户列表">总部公司商户列表</h4>
-<ol>
+  </div>
+</section>
+
+<section id="总部公司商户" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">🏢</span>
+    <div>
+      <span class="section-number">08</span>
+      <h3 class="section-title">总部公司商户</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <h4 id="总部公司商户列表">总部公司商户列表</h4><ol>
 <li>
 <p>筛选商户</p>
 <ol>
@@ -834,10 +1036,7 @@
 </li>
 </ol>
 </li>
-</ol>
-<h4 id="商户详情">商户详情</h4>
-<h5 id="_11">资金账户：</h5>
-<ol>
+</ol><h4 id="商户详情">商户详情</h4><h5 id="_11">资金账户：</h5><ol>
 <li>
 <p>账户信息</p>
 <ol>
@@ -932,9 +1131,7 @@
 </li>
 </ol>
 </li>
-</ol>
-<h6 id="_12">来账明细</h6>
-<ol>
+</ol><h6 id="_12">来账明细</h6><ol>
 <li>
 <p>筛选</p>
 <ol>
@@ -997,9 +1194,7 @@
 </li>
 </ol>
 </li>
-</ol>
-<h5 id="_13">商户信息</h5>
-<ol>
+</ol><h5 id="_13">商户信息</h5><ol>
 <li>
 <p>关联公司：该商户关联的总部公司名称和系统产生的公司编码。</p>
 </li>
@@ -1017,12 +1212,7 @@
 <li>
 <p>商户信息：通过网商银行商户入驻信息查询接口获得的全部商户信息。</p>
 </li>
-</ol>
-<h5 id="_14">结算账户</h5>
-<p>商户绑定的用于提现的银行卡信息。</p>
-<h5 id="_15">外部账户</h5>
-<p>商户通过授权代付签约绑定的外部银行卡。</p>
-<ol>
+</ol><h5 id="_14">结算账户</h5><p>商户绑定的用于提现的银行卡信息。</p><h5 id="_15">外部账户</h5><p>商户通过授权代付签约绑定的外部银行卡。</p><ol>
 <li>
 <p>基础信息</p>
 <ol>
@@ -1168,9 +1358,32 @@
 </ol>
 </li>
 </ol>
-<h2 id="区域公司">区域公司</h2>
-<h3 id="区域公司-2">区域公司</h3>
-<ol>
+  </div>
+</section>
+
+<section id="区域公司" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">🏗️</span>
+    <div>
+      <span class="section-number">09</span>
+      <h2 class="section-title">区域公司</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    
+  </div>
+</section>
+
+<section id="区域公司-2" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">🏗️</span>
+    <div>
+      <span class="section-number">10</span>
+      <h3 class="section-title">区域公司</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>筛选区域公司</p>
 <ol>
@@ -1425,9 +1638,19 @@
 </ol>
 </li>
 </ol>
-<h3 id="区域公司商户">区域公司商户</h3>
-<h4 id="区域公司商户列表">区域公司商户列表</h4>
-<ol>
+  </div>
+</section>
+
+<section id="区域公司商户" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">🏗️</span>
+    <div>
+      <span class="section-number">11</span>
+      <h3 class="section-title">区域公司商户</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <h4 id="区域公司商户列表">区域公司商户列表</h4><ol>
 <li>
 <p>筛选区域公司商户</p>
 <ol>
@@ -1558,10 +1781,7 @@
 </li>
 </ol>
 </li>
-</ol>
-<h4 id="商户详情-2">商户详情</h4>
-<h5 id="_21">资金账户</h5>
-<ol>
+</ol><h4 id="商户详情-2">商户详情</h4><h5 id="_21">资金账户</h5><ol>
 <li>
 <p>账户信息</p>
 <ol>
@@ -1656,9 +1876,7 @@
 </li>
 </ol>
 </li>
-</ol>
-<h6 id="_22">来账明细</h6>
-<ol>
+</ol><h6 id="_22">来账明细</h6><ol>
 <li>
 <p>筛选</p>
 <ol>
@@ -1721,9 +1939,7 @@
 </li>
 </ol>
 </li>
-</ol>
-<h5 id="_23">商户信息</h5>
-<ol>
+</ol><h5 id="_23">商户信息</h5><ol>
 <li>
 <p>关联公司：该商户关联的公司名称和系统产生的公司编码。</p>
 </li>
@@ -1741,13 +1957,9 @@
 <li>
 <p>商户信息：通过网商银行商户入驻信息查询接口获得的全部商户信息。</p>
 </li>
-</ol>
-<h5 id="_24">结算账户</h5>
-<ol>
+</ol><h5 id="_24">结算账户</h5><ol>
 <li>商户绑定的用于提现的银行卡信息。</li>
-</ol>
-<h5 id="_25">外部账户</h5>
-<ol>
+</ol><h5 id="_25">外部账户</h5><ol>
 <li>
 <p>商户通过授权代付签约绑定的外部银行卡。</p>
 </li>
@@ -1850,8 +2062,19 @@
 </ol>
 </li>
 </ol>
-<h2 id="门店">门店</h2>
-<ol>
+  </div>
+</section>
+
+<section id="门店" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">🏪</span>
+    <div>
+      <span class="section-number">12</span>
+      <h2 class="section-title">门店</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>门店数据初始化</p>
 <ol>
@@ -1889,8 +2112,19 @@
 </ol>
 </li>
 </ol>
-<h3 id="门店列表">门店列表</h3>
-<ol>
+  </div>
+</section>
+
+<section id="门店列表" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">🏪</span>
+    <div>
+      <span class="section-number">13</span>
+      <h3 class="section-title">门店列表</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>筛选门店</p>
 <ol>
@@ -2090,9 +2324,19 @@
 </ol>
 </li>
 </ol>
-<h3 id="门店商户">门店商户</h3>
-<h4 id="门店商户列表">门店商户列表</h4>
-<ol>
+  </div>
+</section>
+
+<section id="门店商户" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">🏪</span>
+    <div>
+      <span class="section-number">14</span>
+      <h3 class="section-title">门店商户</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <h4 id="门店商户列表">门店商户列表</h4><ol>
 <li>
 <p>筛选商户</p>
 <ol>
@@ -2226,9 +2470,7 @@
 </li>
 </ol>
 </li>
-</ol>
-<h4 id="商户详情-3">商户详情</h4>
-<ol>
+</ol><h4 id="商户详情-3">商户详情</h4><ol>
 <li>
 <p>资金账户：</p>
 <ol>
@@ -2393,9 +2635,7 @@
 </li>
 </ol>
 </li>
-</ol>
-<h5 id="_32">商户信息</h5>
-<ol>
+</ol><h5 id="_32">商户信息</h5><ol>
 <li>
 <p>关联门店：该商户关联的门店名称和系统产生的门店编码。</p>
 </li>
@@ -2413,13 +2653,9 @@
 <li>
 <p>商户信息：通过网商银行商户入驻信息查询接口获得的全部商户信息。</p>
 </li>
-</ol>
-<h5 id="_33">结算账户</h5>
-<ol>
+</ol><h5 id="_33">结算账户</h5><ol>
 <li>商户绑定的用于提现的银行卡信息。</li>
-</ol>
-<h5 id="_34">外部账户</h5>
-<ol>
+</ol><h5 id="_34">外部账户</h5><ol>
 <li>
 <p>商户通过授权代付签约绑定的外部银行卡。</p>
 </li>
@@ -2522,9 +2758,32 @@
 </ol>
 </li>
 </ol>
-<h2 id="供应商">供应商</h2>
-<h2 id="清算订单三联">清算订单（三联）</h2>
-<ol>
+  </div>
+</section>
+
+<section id="供应商" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">🚚</span>
+    <div>
+      <span class="section-number">15</span>
+      <h2 class="section-title">供应商</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    
+  </div>
+</section>
+
+<section id="清算订单三联" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">📄</span>
+    <div>
+      <span class="section-number">16</span>
+      <h2 class="section-title">清算订单（三联）</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>根据网商银行接口要求，清算订单只需要到订单级别的数据，即不需要订单中具体的sku信息，故本功能中的订单信息不包含三联订单中的sku信息。</p>
 </li>
@@ -2865,9 +3124,32 @@
 </ol>
 </li>
 </ol>
-<h2 id="清算订单收钱吧">清算订单（收钱吧）</h2>
-<h3 id="清算订单">清算订单</h3>
-<ol>
+  </div>
+</section>
+
+<section id="清算订单收钱吧" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">📄</span>
+    <div>
+      <span class="section-number">17</span>
+      <h2 class="section-title">清算订单（收钱吧）</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    
+  </div>
+</section>
+
+<section id="清算订单" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">📄</span>
+    <div>
+      <span class="section-number">18</span>
+      <h3 class="section-title">清算订单</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>根据网商银行接口要求，清算订单只需要到订单级别的数据，即不需要订单中具体的sku信息，故本功能中的订单信息不包含三联订单中的sku信息。</p>
 </li>
@@ -3294,8 +3576,7 @@
 <li>
 <p>补单创单接口字段映射</p>
 </li>
-</ol>
-<table>
+</ol><table>
 <thead>
 <tr>
 <th>#</th>
@@ -3413,8 +3694,19 @@
 </tr>
 </tbody>
 </table>
-<h3 id="POS设置">POS设置</h3>
-<ol>
+  </div>
+</section>
+
+<section id="POS设置" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">19</span>
+      <h3 class="section-title">POS设置</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>POS机数据（列表）从收钱吧推送的对账单中获取，不提供手动添加的方式。</p>
 </li>
@@ -3747,8 +4039,19 @@
 </ol>
 </li>
 </ol>
-<h2 id="清算文件">清算文件</h2>
-<ol>
+  </div>
+</section>
+
+<section id="清算文件" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">📁</span>
+    <div>
+      <span class="section-number">20</span>
+      <h2 class="section-title">清算文件</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>清算文件在网商系统中也被称为「补单文件」，或「交易明细文件」。</p>
 </li>
@@ -4110,12 +4413,34 @@
 </ol>
 </li>
 </ol>
-<h2 id="清算批次">清算批次</h2>
-<ol>
+  </div>
+</section>
+
+<section id="清算批次" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">📦</span>
+    <div>
+      <span class="section-number">21</span>
+      <h2 class="section-title">清算批次</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>清算文件上传成功后，需再创建清算批次正式发起清算。</li>
 </ol>
-<h3 id="新建批次">新建批次</h3>
-<ol>
+  </div>
+</section>
+
+<section id="新建批次" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">22</span>
+      <h3 class="section-title">新建批次</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>新建批次操作从「清算文件」发起。</p>
 </li>
@@ -4209,8 +4534,19 @@
 </ol>
 </li>
 </ol>
-<h3 id="批次管理批次列表">批次管理（批次列表）</h3>
-<ol>
+  </div>
+</section>
+
+<section id="批次管理批次列表" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">23</span>
+      <h3 class="section-title">批次管理（批次列表）</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>筛选：</p>
 <ol>
@@ -4373,8 +4709,19 @@
 </ol>
 </li>
 </ol>
-<h3 id="批次详情">批次详情</h3>
-<ol>
+  </div>
+</section>
+
+<section id="批次详情" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">24</span>
+      <h3 class="section-title">批次详情</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>批次号：带入清算文件名称。</p>
 </li>
@@ -4417,8 +4764,19 @@
 <p>完成时间：<code>批次查询接口&lt;ant.mybank.bkcloudbatch.batch.query&gt;</code>接口返回的<code>FinishTime</code>的值。</p>
 </li>
 </ol>
-<h3 id="编辑批次">编辑批次</h3>
-<ol>
+  </div>
+</section>
+
+<section id="编辑批次" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">25</span>
+      <h3 class="section-title">编辑批次</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>批次号：带入清算文件名称。</p>
 </li>
@@ -4465,8 +4823,19 @@
 </ol>
 </li>
 </ol>
-<h2 id="签约授权">签约授权</h2>
-<ol>
+  </div>
+</section>
+
+<section id="签约授权" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">🔐</span>
+    <div>
+      <span class="section-number">26</span>
+      <h2 class="section-title">签约授权</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>该功能是为了管理、查看用于通过商户子户向体系内其他子户或体系外银行卡/支付宝转账付款的授权与合约。</p>
 </li>
@@ -4507,8 +4876,19 @@
 </ol>
 </li>
 </ol>
-<h3 id="新增修改授权代付合约-授权代付合约产生">新增/修改授权代付合约-授权代付合约产生</h3>
-<ol>
+  </div>
+</section>
+
+<section id="新增修改授权代付合约-授权代付合约产生" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">27</span>
+      <h3 class="section-title">新增/修改授权代付合约-授权代付合约产生</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>协议代扣的授权只能由商户在支付宝云资金小程序主动发起。</p>
 </li>
@@ -4938,9 +5318,19 @@
 </ol>
 </li>
 </ol>
-<h3 id="合约管理">合约管理</h3>
-<h4 id="合约列表">合约列表</h4>
-<ol>
+  </div>
+</section>
+
+<section id="合约管理" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">📝</span>
+    <div>
+      <span class="section-number">28</span>
+      <h3 class="section-title">合约管理</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <h4 id="合约列表">合约列表</h4><ol>
 <li>
 <p>一个合约只能归属一个商户。</p>
 </li>
@@ -5182,10 +5572,7 @@
 </li>
 </ol>
 </li>
-</ol>
-<h4 id="合约详情">合约详情</h4>
-<h5 id="_49">协议代扣</h5>
-<ol>
+</ol><h4 id="合约详情">合约详情</h4><h5 id="_49">协议代扣</h5><ol>
 <li>
 <p>合约号：<code>ArrangementNo</code>字段的值。</p>
 </li>
@@ -5204,9 +5591,7 @@
 <li>
 <p>更新时间：该合约关联的最后一条申请单的更新时间。格式：yyyy-MM-dd HH:mm:ss</p>
 </li>
-</ol>
-<h5 id="_50">授权代付</h5>
-<ol>
+</ol><h5 id="_50">授权代付</h5><ol>
 <li>
 <p>合约号：<code>ArrangementNo</code>字段的值。</p>
 </li>
@@ -5335,9 +5720,19 @@
 </ol>
 </li>
 </ol>
-<h3 id="授权记录授权申请单">授权记录（授权申请单）</h3>
-<h4 id="授权记录申请单的产生">授权记录（申请单）的产生</h4>
-<ol>
+  </div>
+</section>
+
+<section id="授权记录授权申请单" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">📋</span>
+    <div>
+      <span class="section-number">29</span>
+      <h3 class="section-title">授权记录（授权申请单）</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <h4 id="授权记录申请单的产生">授权记录（申请单）的产生</h4><ol>
 <li>
 <p>授权记录（也称为申请单）是合约的产生过程。</p>
 <ol>
@@ -5377,9 +5772,7 @@
 </li>
 </ol>
 </li>
-</ol>
-<h4 id="授权记录列表">授权记录列表</h4>
-<ol>
+</ol><h4 id="授权记录列表">授权记录列表</h4><ol>
 <li>
 <p>一个合约可对应多个授权记录，通过合约号可查询该合约的签约，修改，解约，解约审核的授权记录。</p>
 </li>
@@ -5791,11 +6184,7 @@
 </li>
 </ol>
 </li>
-</ol>
-<h4 id="授权记录详情申请单详情">授权记录详情（申请单详情）</h4>
-<h5 id="_55">协议代扣</h5>
-<p>协议代扣申请单来源</p>
-<ol>
+</ol><h4 id="授权记录详情申请单详情">授权记录详情（申请单详情）</h4><h5 id="_55">协议代扣</h5><p>协议代扣申请单来源</p><ol>
 <li>
 <p>签约：商户在网商云资金小程序发起签约时网商通过<code>授权/解约通知接口&lt;``ant.mybank.merchantprod.merchant.arrangement.info``.notify&gt;</code>通知平台，对应字段<code>当前合约状态ArrangementStatus</code>值<code>已生效:VALID</code>。</p>
 </li>
@@ -5861,10 +6250,7 @@
 </li>
 </ol>
 </li>
-</ol>
-<h5 id="_56">授权代付</h5>
-<p>授权代付申请单来源：</p>
-<ol>
+</ol><h5 id="_56">授权代付</h5><p>授权代付申请单来源：</p><ol>
 <li>
 <p>签约：平台调用<code>签约申请/协议变更申请</code>接口发起新的授权代付合约签约请求。</p>
 </li>
@@ -6130,9 +6516,32 @@
 </ol>
 </li>
 </ol>
-<h2 id="付款">付款</h2>
-<h3 id="付款记录">付款记录</h3>
-<ol>
+  </div>
+</section>
+
+<section id="付款" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">💰</span>
+    <div>
+      <span class="section-number">30</span>
+      <h2 class="section-title">付款</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    
+  </div>
+</section>
+
+<section id="付款记录" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💰</span>
+    <div>
+      <span class="section-number">31</span>
+      <h3 class="section-title">付款记录</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>接口调用：</p>
 <ol>
@@ -6400,12 +6809,21 @@
 </ol>
 </li>
 </ol>
-<h3 id="付款单详情">付款单详情</h3>
-<ol>
+  </div>
+</section>
+
+<section id="付款单详情" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💰</span>
+    <div>
+      <span class="section-number">32</span>
+      <h3 class="section-title">付款单详情</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>接口调用和数据来源同付款单列表。</li>
-</ol>
-<h4 id="协议代扣">协议代扣</h4>
-<ol>
+</ol><h4 id="协议代扣">协议代扣</h4><ol>
 <li>
 <p>业务流水号：发起付款申请时系统生成的业务流水号，对应网商<code>OutTradeNo</code>字段值。</p>
 </li>
@@ -6509,9 +6927,7 @@
 <li>
 <p>错误描述：对应网商<code>ErrorDesc</code>字段值，状态为「FAIL」时出现。</p>
 </li>
-</ol>
-<h4 id="授权代付">授权代付</h4>
-<ol>
+</ol><h4 id="授权代付">授权代付</h4><ol>
 <li>
 <p>业务流水号：发起付款申请时系统生成的业务流水号，对应网商<code>OutTradeNo</code>字段值。</p>
 </li>
@@ -6620,9 +7036,19 @@
 <p>错误描述：对应网商<code>ErrorDesc</code>字段值，状态为「FAIL」时出现。</p>
 </li>
 </ol>
-<h3 id="批量付款">批量付款</h3>
-<p>用户在前置操作中发起付款时，默认进入「批次付款」标签页。</p>
-<ol>
+  </div>
+</section>
+
+<section id="批量付款" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💰</span>
+    <div>
+      <span class="section-number">33</span>
+      <h3 class="section-title">批量付款</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <p>用户在前置操作中发起付款时，默认进入「批次付款」标签页。</p><ol>
 <li>
 <p>填写批量付款表格并上传</p>
 <ol>
@@ -6850,8 +7276,19 @@
 </ol>
 </li>
 </ol>
-<h3 id="单笔付款">单笔付款</h3>
-<ol>
+  </div>
+</section>
+
+<section id="单笔付款" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💰</span>
+    <div>
+      <span class="section-number">34</span>
+      <h3 class="section-title">单笔付款</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>根据费用场景（对内/对外），需调用网商不同的接口。</p>
 <ol>
@@ -7065,9 +7502,19 @@
 </ol>
 </li>
 </ol>
-<h3 id="发起付款接口调用">发起付款接口调用</h3>
-<h4 id="协议代扣-2">协议代扣</h4>
-<table>
+  </div>
+</section>
+
+<section id="发起付款接口调用" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💰</span>
+    <div>
+      <span class="section-number">35</span>
+      <h3 class="section-title">发起付款接口调用</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <h4 id="协议代扣-2">协议代扣</h4><table>
 <thead>
 <tr>
 <th><strong>序号</strong></th>
@@ -7232,9 +7679,7 @@
 <td></td>
 </tr>
 </tbody>
-</table>
-<p>PayerSpecifiedInfo → specifiedMerchantAmtComposition</p>
-<pre class="codehilite"><code class="language-JSON">{
+</table><p>PayerSpecifiedInfo → specifiedMerchantAmtComposition</p><pre class="codehilite"><code class="language-JSON">{
     "specifiedMerchantAmtComposition": {
         "componentPriorityList": [
             {
@@ -7252,9 +7697,7 @@
         ]
     }
 }
-</code></pre>
-<h4 id="授权代付-2">授权代付</h4>
-<table>
+</code></pre><h4 id="授权代付-2">授权代付</h4><table>
 <thead>
 <tr>
 <th><strong>参数名称</strong></th>
@@ -7431,9 +7874,32 @@
 </tr>
 </tbody>
 </table>
-<h1 id="平台管理">平台管理</h1>
-<h2 id="区域划分">区域划分</h2>
-<ol>
+  </div>
+</section>
+
+<section id="平台管理" class="section-hero reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">36</span>
+      <h1 class="section-title">平台管理</h1>
+    </div>
+  </div>
+  <div class="section-body">
+    
+  </div>
+</section>
+
+<section id="区域划分" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">🗺️</span>
+    <div>
+      <span class="section-number">37</span>
+      <h2 class="section-title">区域划分</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>筛选区域</p>
 <ol>
@@ -7501,8 +7967,19 @@
 </ol>
 </li>
 </ol>
-<h2 id="业务属性">业务属性</h2>
-<ol>
+  </div>
+</section>
+
+<section id="业务属性" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">🏷️</span>
+    <div>
+      <span class="section-number">38</span>
+      <h2 class="section-title">业务属性</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>筛选业务属性</p>
 <ol>
@@ -7570,12 +8047,34 @@
 </ol>
 </li>
 </ol>
-<h2 id="角色">角色</h2>
-<ol>
+  </div>
+</section>
+
+<section id="角色" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">👥</span>
+    <div>
+      <span class="section-number">39</span>
+      <h2 class="section-title">角色</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>超级管理员角色：拥有所有业务模块的所有管理权限。</li>
 </ol>
-<h2 id="账户">账户</h2>
-<ol>
+  </div>
+</section>
+
+<section id="账户" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">👤</span>
+    <div>
+      <span class="section-number">40</span>
+      <h2 class="section-title">账户</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>预置一个管理员账户</p>
 <ol>
@@ -7587,12 +8086,46 @@
 </li>
 </ol>
 </li>
-</ol>
-<hr/>
-<h1 id="全局规则">全局规则</h1>
-<h2 id="公司和门店编码生成规则">公司和门店编码生成规则</h2>
-<h3 id="总部公司编码">总部公司编码</h3>
-<ol>
+</ol><hr/>
+  </div>
+</section>
+
+<section id="全局规则" class="section-hero reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">41</span>
+      <h1 class="section-title">全局规则</h1>
+    </div>
+  </div>
+  <div class="section-body">
+    
+  </div>
+</section>
+
+<section id="公司和门店编码生成规则" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">🏪</span>
+    <div>
+      <span class="section-number">42</span>
+      <h2 class="section-title">公司和门店编码生成规则</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    
+  </div>
+</section>
+
+<section id="总部公司编码" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">🏢</span>
+    <div>
+      <span class="section-number">43</span>
+      <h3 class="section-title">总部公司编码</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>格式：<code>{CARE}BD{3位自增数字编号}</code></p>
 </li>
@@ -7617,8 +8150,19 @@
 <p>删改规则：总部公司编码一经生成不可删除，不可修改。</p>
 </li>
 </ol>
-<h3 id="区域公司编码">区域公司编码</h3>
-<ol>
+  </div>
+</section>
+
+<section id="区域公司编码" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">🏗️</span>
+    <div>
+      <span class="section-number">44</span>
+      <h3 class="section-title">区域公司编码</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>格式：<code>{CARE}REG{001}{3位自增数字编号}</code></p>
 </li>
@@ -7646,8 +8190,19 @@
 <p>删改规则：区域公司编码一经生成不可删除，不可修改。</p>
 </li>
 </ol>
-<h3 id="门店编码">门店编码</h3>
-<ol>
+  </div>
+</section>
+
+<section id="门店编码" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">🏪</span>
+    <div>
+      <span class="section-number">45</span>
+      <h3 class="section-title">门店编码</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>格式：<code>{品牌名}{省份缩写}{YYYYMMDD}{3位自增数字编号}</code></p>
 </li>
@@ -7675,8 +8230,19 @@
 <p>删改规则：门店编码一经生成不可删除，不可修改。</p>
 </li>
 </ol>
-<h3 id="外部商户号商户编码">外部商户号（商户编码）</h3>
-<ol>
+  </div>
+</section>
+
+<section id="外部商户号商户编码" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">46</span>
+      <h3 class="section-title">外部商户号（商户编码）</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>格式：{商户关联主体的编码}_{2位自增数字}</p>
 </li>
@@ -7701,8 +8267,19 @@
 <p>删改规则：外部商户号一经生成不可删除，不可修改。</p>
 </li>
 </ol>
-<h2 id="商户入驻状态">商户入驻状态</h2>
-<ol>
+  </div>
+</section>
+
+<section id="商户入驻状态" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">47</span>
+      <h2 class="section-title">商户入驻状态</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>入驻状态包含网商以下接口返回值：</p>
 <ol>
@@ -7876,9 +8453,19 @@
 <p>状态流转</p>
 </li>
 </ol>
-<h2 id="清算订单状态">清算订单状态</h2>
-<p>三联系统未维护订单创建、支付等前置状态，本系统订单状态从订单上送环节开始定义。</p>
-<ol>
+  </div>
+</section>
+
+<section id="清算订单状态" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">📄</span>
+    <div>
+      <span class="section-number">48</span>
+      <h2 class="section-title">清算订单状态</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <p>三联系统未维护订单创建、支付等前置状态，本系统订单状态从订单上送环节开始定义。</p><ol>
 <li>
 <p>状态定义：</p>
 <ol>
@@ -7914,8 +8501,19 @@
 <p>状态变更</p>
 </li>
 </ol>
-<h3 id="POS机绑定状态">POS机绑定状态</h3>
-<ol>
+  </div>
+</section>
+
+<section id="POS机绑定状态" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">49</span>
+      <h3 class="section-title">POS机绑定状态</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>状态定义：</p>
 <ol>
@@ -7931,8 +8529,19 @@
 <p>状态变更</p>
 </li>
 </ol>
-<h2 id="清算批次号生成规则">清算批次号生成规则</h2>
-<ol>
+  </div>
+</section>
+
+<section id="清算批次号生成规则" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">📦</span>
+    <div>
+      <span class="section-number">50</span>
+      <h2 class="section-title">清算批次号生成规则</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>格式：<code>{CARE}{YYYYMMDD}_{2位自增数字编号}</code></p>
 </li>
@@ -7968,8 +8577,19 @@
 </ol>
 </li>
 </ol>
-<h2 id="清算文件状态">清算文件状态</h2>
-<ol start="5">
+  </div>
+</section>
+
+<section id="清算文件状态" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">📁</span>
+    <div>
+      <span class="section-number">51</span>
+      <h2 class="section-title">清算文件状态</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol start="5">
 <li>
 <p>状态定义：</p>
 <ol>
@@ -8012,8 +8632,19 @@
 <p>状态流转</p>
 </li>
 </ol>
-<h2 id="清算批次状态">清算批次状态</h2>
-<ol>
+  </div>
+</section>
+
+<section id="清算批次状态" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">📦</span>
+    <div>
+      <span class="section-number">52</span>
+      <h2 class="section-title">清算批次状态</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>状态说明</p>
 <ol>
@@ -8093,10 +8724,19 @@
 <p>状态流转</p>
 </li>
 </ol>
-<h2 id="系统流水号">系统流水号</h2>
-<p>协议代扣和授权代付合约变更（签约，修改，解约，解约审核）时产生申请单，每个申请单有唯一的系统流水号。</p>
-<p>系统流水号对应网商接口中的<code>OutTradeNo</code>字段。</p>
-<ol>
+  </div>
+</section>
+
+<section id="系统流水号" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">53</span>
+      <h2 class="section-title">系统流水号</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <p>协议代扣和授权代付合约变更（签约，修改，解约，解约审核）时产生申请单，每个申请单有唯一的系统流水号。</p><p>系统流水号对应网商接口中的<code>OutTradeNo</code>字段。</p><ol>
 <li>
 <p>格式：<code>{N/W}{YYYYMMDD}{4位自增数字编号}</code></p>
 </li>
@@ -8132,9 +8772,32 @@
 </ol>
 </li>
 </ol>
-<h2 id="协议代扣-3">协议代扣</h2>
-<h3 id="协议代扣申请单类型">协议代扣申请单类型</h3>
-<table>
+  </div>
+</section>
+
+<section id="协议代扣-3" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">54</span>
+      <h2 class="section-title">协议代扣</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    
+  </div>
+</section>
+
+<section id="协议代扣申请单类型" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">55</span>
+      <h3 class="section-title">协议代扣申请单类型</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <table>
 <thead>
 <tr>
 <th>申请类型</th>
@@ -8168,8 +8831,19 @@
 </tr>
 </tbody>
 </table>
-<h3 id="协议代扣申请单状态">协议代扣申请单状态</h3>
-<ol>
+  </div>
+</section>
+
+<section id="协议代扣申请单状态" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">56</span>
+      <h3 class="section-title">协议代扣申请单状态</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>申请单状态来源：</p>
 <ol>
@@ -8209,8 +8883,19 @@
 </table>
 </li>
 </ol>
-<h3 id="协议代扣合约状态">协议代扣合约状态</h3>
-<ol>
+  </div>
+</section>
+
+<section id="协议代扣合约状态" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">57</span>
+      <h3 class="section-title">协议代扣合约状态</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>授权/解约成功通知接口\&lt;ant.mybank.merchantprod.merchant.arrangement.info.notify&gt;</p>
 </li>
@@ -8312,10 +8997,32 @@
 </table>
 </li>
 </ol>
-<h2 id="授权代付-3">授权代付</h2>
-<p>方案介绍：<a href="https://bcno92iwldd2.feishu.cn/docx/UE98d1x14oAjiNxrZSYcBLIgnRV">加盟授权代付方案（子户→ 结算卡→ 外部银行卡/支付宝）</a></p>
-<h3 id="授权代付业务子场景">授权代付业务子场景</h3>
-<table>
+  </div>
+</section>
+
+<section id="授权代付-3" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">58</span>
+      <h2 class="section-title">授权代付</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <p>方案介绍：<a href="https://bcno92iwldd2.feishu.cn/docx/UE98d1x14oAjiNxrZSYcBLIgnRV">加盟授权代付方案（子户→ 结算卡→ 外部银行卡/支付宝）</a></p>
+  </div>
+</section>
+
+<section id="授权代付业务子场景" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">59</span>
+      <h3 class="section-title">授权代付业务子场景</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <table>
 <thead>
 <tr>
 <th>子场景</th>
@@ -8369,11 +9076,21 @@
 </tr>
 </tbody>
 </table>
-<h3 id="授权代付申请单类型">授权代付申请单类型</h3>
-<ol>
+  </div>
+</section>
+
+<section id="授权代付申请单类型" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">60</span>
+      <h3 class="section-title">授权代付申请单类型</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>授权代付申请单类型与来源</li>
-</ol>
-<table>
+</ol><table>
 <thead>
 <tr>
 <th>申请类型</th>
@@ -8407,8 +9124,19 @@
 </tr>
 </tbody>
 </table>
-<h3 id="授权代付申请单状态">授权代付申请单状态</h3>
-<ol>
+  </div>
+</section>
+
+<section id="授权代付申请单状态" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">61</span>
+      <h3 class="section-title">授权代付申请单状态</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>申请单状态来源</p>
 <ol>
@@ -8489,8 +9217,19 @@
 </table>
 </li>
 </ol>
-<h3 id="授权代付合约状态">授权代付合约状态</h3>
-<ol>
+  </div>
+</section>
+
+<section id="授权代付合约状态" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">62</span>
+      <h3 class="section-title">授权代付合约状态</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>合约状态来源</p>
 <ol>
@@ -8531,8 +9270,19 @@
 </table>
 </li>
 </ol>
-<h2 id="银行卡号和手机号脱敏规则">银行卡号和手机号脱敏规则</h2>
-<ol>
+  </div>
+</section>
+
+<section id="银行卡号和手机号脱敏规则" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">63</span>
+      <h2 class="section-title">银行卡号和手机号脱敏规则</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>银行卡：</p>
 <ol>
@@ -8573,11 +9323,32 @@
 </ol>
 </li>
 </ol>
-<h2 id="对外付款">对外付款</h2>
-<h3 id="业务流水号">业务流水号</h3>
-<h4 id="批量付款业务流水号">批量付款业务流水号</h4>
-<h5 id="_97">批量付款批次号</h5>
-<ol>
+  </div>
+</section>
+
+<section id="对外付款" class="section-card reveal">
+  <div class="section-header">
+    <span class="section-icon">💰</span>
+    <div>
+      <span class="section-number">64</span>
+      <h2 class="section-title">对外付款</h2>
+    </div>
+  </div>
+  <div class="section-body">
+    
+  </div>
+</section>
+
+<section id="业务流水号" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💎</span>
+    <div>
+      <span class="section-number">65</span>
+      <h3 class="section-title">业务流水号</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <h4 id="批量付款业务流水号">批量付款业务流水号</h4><h5 id="_97">批量付款批次号</h5><ol>
 <li>
 <p>格式：<code>{3位自增数字编号}{YYYYMMDD}</code></p>
 </li>
@@ -8598,10 +9369,7 @@
 <li>
 <p>删改规则：付款批次号一经生成不可删除，不可修改。</p>
 </li>
-</ol>
-<h5 id="_98">批量付款业务流水号</h5>
-<p>映射网商字段：</p>
-<ol>
+</ol><h5 id="_98">批量付款业务流水号</h5><p>映射网商字段：</p><ol>
 <li>
 <p>协议代扣：代扣业务订单号，OutTradeNo</p>
 </li>
@@ -8634,10 +9402,7 @@
 <li>
 <p>删改规则：业务流水号一经生成不可删除，不可修改。</p>
 </li>
-</ol>
-<h4 id="单笔付款业务流水号">单笔付款业务流水号</h4>
-<p>映射网商字段：</p>
-<ol>
+</ol><h4 id="单笔付款业务流水号">单笔付款业务流水号</h4><p>映射网商字段：</p><ol>
 <li>
 <p>协议代扣：代扣业务订单号，OutTradeNo</p>
 </li>
@@ -8674,9 +9439,19 @@
 <p>删改规则：业务流水号一经生成不可删除，不可修改。</p>
 </li>
 </ol>
-<h3 id="付款单状态">付款单状态</h3>
-<h4 id="协议代扣付款单状态">协议代扣付款单状态</h4>
-<ol>
+  </div>
+</section>
+
+<section id="付款单状态" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💰</span>
+    <div>
+      <span class="section-number">66</span>
+      <h3 class="section-title">付款单状态</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <h4 id="协议代扣付款单状态">协议代扣付款单状态</h4><ol>
 <li>
 <p>包含协议代扣批量支付和单笔支付的业务订单。</p>
 </li>
@@ -8694,8 +9469,7 @@
 <li>
 <p>状态说明与接口字段映射</p>
 </li>
-</ol>
-<table>
+</ol><table>
 <thead>
 <tr>
 <th>状态名称</th>
@@ -8728,9 +9502,7 @@
 <td>代扣执行失败，资金未划转</td>
 </tr>
 </tbody>
-</table>
-<h4 id="授权代付付款单状态">授权代付付款单状态</h4>
-<ol>
+</table><h4 id="授权代付付款单状态">授权代付付款单状态</h4><ol>
 <li>
 <p>包含授权代付批量支付和单笔支付的业务订单。</p>
 </li>
@@ -8748,8 +9520,7 @@
 <li>
 <p>子场景状态说明与接口字段映射</p>
 </li>
-</ol>
-<table>
+</ol><table>
 <thead>
 <tr>
 <th>状态名称</th>
@@ -8783,8 +9554,19 @@
 </tr>
 </tbody>
 </table>
-<h3 id="批量付款批次状态">批量付款批次状态</h3>
-<ol>
+  </div>
+</section>
+
+<section id="批量付款批次状态" class="section-sub reveal">
+  <div class="section-header">
+    <span class="section-icon">💰</span>
+    <div>
+      <span class="section-number">67</span>
+      <h3 class="section-title">批量付款批次状态</h3>
+    </div>
+  </div>
+  <div class="section-body">
+    <ol>
 <li>
 <p>批次状态包含了批次表格在本系统中的解析状态和该批次所有付款单在网商侧的付款状态。</p>
 </li>
@@ -8828,74 +9610,72 @@
 </table>
 </li>
 </ol>
+  </div>
+</section>
+
+</div>
+
+<div id="footer">
+  Basalt OS · 清算分账管理系统需求文档
 </div>
 
 <button id="back-to-top" aria-label="回到顶部">↑</button>
 
 <script>
+// Progress bar
+var progressBar = document.getElementById('progress-bar');
+window.addEventListener('scroll', function() {
+  var h = document.documentElement.scrollHeight - window.innerHeight;
+  progressBar.style.width = (h > 0 ? window.scrollY / h * 100 : 0) + '%';
+});
 
-  // Progress bar
-  const progressBar = document.getElementById('progress-bar');
-  window.addEventListener('scroll', function() {
-    var h = document.documentElement.scrollHeight - window.innerHeight;
-    var pct = h > 0 ? (window.scrollY / h * 100) : 0;
-    progressBar.style.width = pct + '%';
-  });
+// Nav scroll effect
+var nav = document.getElementById('nav');
+window.addEventListener('scroll', function() {
+  nav.classList.toggle('scrolled', window.scrollY > 40);
+});
 
-  // Sidebar active link
-  var anchors = document.querySelectorAll('.toc-list a');
-  var sections = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id]');
-  window.addEventListener('scroll', function() {
-    var current = '';
-    sections.forEach(function(sec) {
-      if (window.scrollY >= sec.offsetTop - 120) current = sec.id;
-    });
-    anchors.forEach(function(a) {
-      a.classList.toggle('active', a.getAttribute('data-anchor') === current);
-    });
+// Active nav link
+var navLinks = document.querySelectorAll('.nav-link');
+var headings = document.querySelectorAll('h1[id], h2[id], h3[id]');
+window.addEventListener('scroll', function() {
+  var current = '';
+  headings.forEach(function(h) {
+    if (window.scrollY >= h.offsetTop - 120) current = h.id;
   });
+  navLinks.forEach(function(a) {
+    a.classList.toggle('active', a.getAttribute('data-anchor') === current);
+  });
+});
 
-  // Smooth scroll for TOC links
-  anchors.forEach(function(a) {
-    a.addEventListener('click', function(e) {
-      e.preventDefault();
-      var target = document.getElementById(a.getAttribute('data-anchor'));
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        document.getElementById('sidebar').classList.remove('open');
-      }
-    });
+// Smooth scroll
+navLinks.forEach(function(a) {
+  a.addEventListener('click', function(e) {
+    e.preventDefault();
+    var target = document.getElementById(a.getAttribute('data-anchor'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
+});
 
-  // Back to top
-  var btn = document.getElementById('back-to-top');
-  window.addEventListener('scroll', function() {
-    btn.classList.toggle('visible', window.scrollY > 400);
-  });
-  btn.addEventListener('click', function() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
+// Back to top
+var btn = document.getElementById('back-to-top');
+window.addEventListener('scroll', function() {
+  btn.classList.toggle('visible', window.scrollY > 500);
+});
+btn.addEventListener('click', function() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
 
-  // Mobile menu toggle
-  document.getElementById('menu-toggle').addEventListener('click', function() {
-    document.getElementById('sidebar').classList.toggle('open');
+// Reveal on scroll
+var reveals = document.querySelectorAll('.reveal');
+var observer = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
   });
-
-  // Collapsible sections: click heading to toggle content
-  document.querySelectorAll('h1[id], h2[id], h3[id]').forEach(function(h) {
-    h.title = '点击折叠/展开下方内容';
-    var collapsed = false;
-    h.addEventListener('click', function() {
-      var el = h.nextElementSibling;
-      while (el && !el.matches('h1, h2, h3')) {
-        el.style.display = collapsed ? '' : 'none';
-        el = el.nextElementSibling;
-      }
-      h.style.opacity = collapsed ? '1' : '0.55';
-      collapsed = !collapsed;
-    });
-  });
-
+}, { threshold: 0.06 });
+reveals.forEach(function(el) { observer.observe(el); });
 </script>
 </body>
 </html>
