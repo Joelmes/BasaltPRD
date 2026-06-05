@@ -9,7 +9,7 @@
   --bg: #faf8f5;
   --card: #ffffff;
   --text: #37352f;
-  --text2: #787064;
+  --text2: #9b9488;
   --accent: #c96442;
   --accent2: #d98a6a;
   --accent-bg: #fdf0ea;
@@ -18,18 +18,17 @@
   --code-bg: #1c1917;
   --code-text: #e8ddd3;
   --chapter-bg: linear-gradient(160deg, #f5efe8 0%, #ede4d8 100%);
+  --part-bg: linear-gradient(160deg, #ede4d8 0%, #e2d5c5 100%);
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --rail-w: 56px;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  overflow: hidden;
-  height: 100vh; width: 100vw;
+  background: var(--bg); color: var(--text);
+  overflow: hidden; height: 100vh; width: 100vw;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ===== Progress ===== */
@@ -40,35 +39,69 @@ body {
   box-shadow: 0 0 10px rgba(201,100,66,0.25);
 }
 
+/* ===== Right Rail Nav ===== */
+.rail {
+  position: fixed; right: 0; top: 0; bottom: 0; width: var(--rail-w);
+  background: rgba(255,255,255,0.6); backdrop-filter: blur(10px);
+  border-left: 1px solid var(--border);
+  z-index: 200; display: flex; flex-direction: column;
+  padding: 60px 0 80px;
+  overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: none;
+}
+.rail::-webkit-scrollbar { display: none; }
+
+.rail-label {
+  writing-mode: vertical-rl; text-orientation: mixed;
+  font-size: 10px; font-weight: 600; color: var(--text2);
+  padding: 8px 0; letter-spacing: 0.06em;
+  text-transform: uppercase; white-space: nowrap;
+  cursor: pointer; transition: color 0.2s;
+  display: flex; align-items: center; gap: 4px;
+  min-height: 32px; flex-shrink: 0;
+  padding-left: 12px; padding-right: 12px;
+}
+.rail-label:hover { color: var(--accent); }
+.rail-label.on { color: var(--accent); font-weight: 700; }
+
+.rail-label .rail-ico {
+  writing-mode: horizontal-tb; font-size: 12px; flex-shrink: 0;
+}
+
+.rail-sep {
+  width: 20px; height: 1px; background: var(--border);
+  margin: 4px auto; flex-shrink: 0;
+}
+
+.rail-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--border); flex-shrink: 0;
+  margin: 3px auto; cursor: pointer;
+  transition: all 0.2s;
+}
+.rail-dot:hover { background: var(--accent2); }
+.rail-dot.on { background: var(--accent); transform: scale(1.4); }
+
 /* ===== Slide Shell ===== */
-.deck { width: 100vw; height: 100vh; position: relative; }
+.deck { width: calc(100vw - var(--rail-w)); height: 100vh; position: relative; }
 .slide {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   padding: 48px 56px;
-  opacity: 0; transform: translateY(24px) scale(0.98);
-  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
-  pointer-events: none;
-  will-change: opacity, transform;
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
+  pointer-events: none; will-change: opacity, transform;
 }
-.slide.active {
-  opacity: 1; transform: translateY(0) scale(1);
-  pointer-events: all;
-}
-.slide.exit {
-  opacity: 0; transform: translateY(-16px) scale(0.99);
-}
+.slide.active { opacity: 1; transform: translateY(0); pointer-events: all; }
+.slide.exit { opacity: 0; transform: translateY(-14px); }
 
 /* ===== Cover ===== */
-.slide.cover {
-  background: var(--chapter-bg);
-}
+.slide.cover { background: var(--chapter-bg); }
 .cover-badge {
   display: inline-block; padding: 6px 16px; border-radius: 20px;
   background: var(--accent-bg); color: var(--accent);
-  font-size: 13px; font-weight: 600; letter-spacing: 0.05em;
-  margin-bottom: 24px;
+  font-size: 13px; font-weight: 600; letter-spacing: 0.05em; margin-bottom: 24px;
 }
 .cover-title {
   font-size: clamp(2.2em, 5vw, 3.8em); font-weight: 800;
@@ -78,58 +111,62 @@ body {
   font-size: clamp(1em, 2vw, 1.35em); color: var(--accent);
   font-weight: 500; margin-top: 8px; margin-bottom: 36px;
 }
-.cover-stats {
-  display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
-}
+.cover-stats { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
 .stat-card {
   background: var(--card); border-radius: 12px; padding: 18px 28px;
   box-shadow: 0 1px 8px rgba(0,0,0,0.06); text-align: center;
   min-width: 120px; border: 1px solid var(--border);
 }
-.stat-num {
-  font-size: 2em; font-weight: 700; color: var(--accent);
-  display: block; line-height: 1.1;
+.stat-num { font-size: 2em; font-weight: 700; color: var(--accent); display: block; line-height: 1.1; }
+.stat-label { font-size: 0.82em; color: var(--text2); margin-top: 4px; }
+
+/* ===== Part Divider ===== */
+.slide.part { background: var(--part-bg); }
+.part-badge {
+  display: inline-block; padding: 5px 14px; border-radius: 6px;
+  background: var(--heading); color: #f5efe8;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; margin-bottom: 16px;
 }
-.stat-label {
-  font-size: 0.82em; color: var(--text2); margin-top: 4px;
+.part-title {
+  font-size: clamp(1.6em, 3.5vw, 2.8em); font-weight: 800;
+  color: var(--heading); letter-spacing: -0.02em; line-height: 1.2; text-align: center;
+}
+.part-desc {
+  font-size: 0.95em; color: var(--text2); margin-top: 12px;
+  max-width: 600px; text-align: center; line-height: 1.7;
 }
 
 /* ===== Chapter Divider ===== */
-.slide.chapter {
-  background: var(--chapter-bg);
-}
-.chapter-icon { font-size: 3em; margin-bottom: 12px; }
+.slide.chapter { background: var(--chapter-bg); }
+.chapter-icon { font-size: 2.8em; margin-bottom: 12px; }
 .chapter-num {
-  font-size: 0.82em; font-weight: 700; color: var(--accent);
+  font-size: 0.8em; font-weight: 700; color: var(--accent);
   text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px;
 }
 .chapter-title {
-  font-size: clamp(1.8em, 4vw, 3em); font-weight: 800;
-  color: var(--heading); letter-spacing: -0.02em; line-height: 1.2;
-  text-align: center;
+  font-size: clamp(1.5em, 3.5vw, 2.6em); font-weight: 800;
+  color: var(--heading); letter-spacing: -0.02em; line-height: 1.2; text-align: center;
 }
 
 /* ===== Content Slide ===== */
-.slide.content {
-  justify-content: flex-start; padding-top: 64px;
-}
-.slide-inner { max-width: 1080px; width: 100%; }
+.slide.content { justify-content: flex-start; padding-top: 56px; }
+.slide-inner { max-width: 1060px; width: 100%; }
 .slide-head {
   display: flex; align-items: center; gap: 14px;
-  margin-bottom: 20px; padding-bottom: 14px;
+  margin-bottom: 18px; padding-bottom: 12px;
   border-bottom: 2px solid var(--border);
 }
 .head-icon {
-  font-size: 1.6em; width: 46px; height: 46px;
+  font-size: 1.5em; width: 44px; height: 44px;
   display: flex; align-items: center; justify-content: center;
   background: var(--accent-bg); border-radius: 10px; flex-shrink: 0;
 }
-.head-title { font-size: 1.5em; font-weight: 700; color: var(--heading); }
-.head-breadcrumb { font-size: 0.8em; color: var(--text2); margin-top: 2px; }
+.head-title { font-size: 1.4em; font-weight: 700; color: var(--heading); }
+.head-breadcrumb { font-size: 0.78em; color: var(--text2); margin-top: 2px; }
 
 .slide-body {
   flex: 1; overflow-y: auto; padding-right: 8px;
-  max-height: calc(100vh - 170px);
+  max-height: calc(100vh - 160px);
   scrollbar-width: thin; scrollbar-color: var(--border) transparent;
 }
 .slide-body::-webkit-scrollbar { width: 4px; }
@@ -141,6 +178,10 @@ body {
 .slide-body ul, .slide-body ol { padding-left: 22px; margin: 8px 0; }
 .slide-body li { margin: 5px 0; line-height: 1.75; color: #444; font-size: 14px; }
 .slide-body li > ul, .slide-body li > ol { margin: 3px 0; }
+.slide-body h4 {
+  font-size: 1.05em; font-weight: 600; color: var(--heading);
+  margin: 18px 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+}
 .slide-body table {
   width: 100%; border-collapse: collapse; margin: 14px 0;
   font-size: 13.5px; border-radius: 8px; overflow: hidden;
@@ -151,10 +192,7 @@ body {
   padding: 9px 12px; text-align: left; border-bottom: 2px solid var(--border);
   font-size: 13px;
 }
-.slide-body td {
-  padding: 7px 12px; border-bottom: 1px solid #f0ebe4; vertical-align: top;
-  font-size: 13px;
-}
+.slide-body td { padding: 7px 12px; border-bottom: 1px solid #f0ebe4; vertical-align: top; font-size: 13px; }
 .slide-body tr:nth-child(even) td { background: #fdfcfa; }
 .slide-body tr:hover td { background: var(--accent-bg); }
 .slide-body code {
@@ -168,10 +206,7 @@ body {
   overflow-x: auto; font-size: 13px; line-height: 1.65;
   border: 1px solid #2a2725;
 }
-.slide-body pre code {
-  background: none; color: inherit; padding: 0; border-radius: 0;
-  font-size: inherit; font-weight: 400;
-}
+.slide-body pre code { background: none; color: inherit; padding: 0; border-radius: 0; font-size: inherit; font-weight: 400; }
 .slide-body blockquote {
   border-left: 4px solid var(--accent); margin: 12px 0;
   padding: 10px 16px; background: var(--accent-bg);
@@ -186,111 +221,91 @@ body {
 /* ===== TOC Slide ===== */
 .toc-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px; margin-top: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px; margin-top: 16px;
 }
 .toc-card {
   display: flex; align-items: center; gap: 10px;
-  padding: 14px 16px; background: var(--card);
+  padding: 12px 14px; background: var(--card);
   border-radius: 10px; border: 1px solid var(--border);
   cursor: pointer; transition: all 0.2s; text-decoration: none; color: var(--text);
 }
-.toc-card:hover {
-  border-color: var(--accent); transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-}
+.toc-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
 .toc-card-icon {
-  font-size: 1.3em; width: 36px; height: 36px;
+  font-size: 1.2em; width: 32px; height: 32px;
   display: flex; align-items: center; justify-content: center;
   background: var(--accent-bg); border-radius: 8px; flex-shrink: 0;
 }
-.toc-card-text { font-size: 14px; font-weight: 500; color: var(--heading); }
+.toc-card-text { font-size: 13px; font-weight: 500; color: var(--heading); }
 
-/* ===== Nav ===== */
+/* ===== Bottom Nav ===== */
 .nav {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 10px; z-index: 100;
+  position: fixed; bottom: 20px; left: calc((100vw - var(--rail-w))/2);
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px; z-index: 100;
   background: rgba(255,255,255,0.88); backdrop-filter: blur(14px);
-  padding: 8px 18px; border-radius: 40px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.07); border: 1px solid var(--border);
+  padding: 6px 16px; border-radius: 40px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid var(--border);
 }
 .nav-btn {
-  width: 34px; height: 34px; border-radius: 50%;
+  width: 32px; height: 32px; border-radius: 50%;
   border: 1px solid var(--border); background: var(--card);
   color: var(--text); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px; transition: all 0.15s;
+  font-size: 13px; transition: all 0.15s;
 }
 .nav-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 .counter {
-  font-size: 12px; color: var(--text2); min-width: 52px;
+  font-size: 12px; color: var(--text2); min-width: 48px;
   text-align: center; font-variant-numeric: tabular-nums;
 }
-.dots {
-  display: flex; gap: 5px; max-width: 280px; overflow: hidden;
-  align-items: center;
-}
-.dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: #d4cdc5; cursor: pointer; flex-shrink: 0;
-  transition: all 0.25s;
-}
-.dot.on {
-  background: var(--accent); transform: scale(1.5);
-}
-.dot.sec {
-  width: 8px; height: 8px; background: var(--accent); opacity: 0.35;
-}
-.dot.sec.on { opacity: 1; transform: scale(1.5); }
 
-/* ===== Fullscreen ===== */
+/* ===== FS / Hint ===== */
 .fs-btn {
-  position: fixed; top: 14px; right: 14px;
-  width: 34px; height: 34px; border-radius: 8px;
+  position: fixed; top: 12px; right: calc(var(--rail-w) + 12px);
+  width: 32px; height: 32px; border-radius: 8px;
   border: 1px solid var(--border); background: rgba(255,255,255,0.8);
   backdrop-filter: blur(8px); color: var(--text2); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  font-size: 15px; z-index: 100; transition: all 0.15s;
+  font-size: 14px; z-index: 100; transition: all 0.15s;
 }
 .fs-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-/* ===== Hint ===== */
 .hint {
-  position: fixed; bottom: 72px; left: 50%; transform: translateX(-50%);
-  font-size: 12px; color: #c0b8ae; z-index: 100; pointer-events: none;
-  animation: hintFade 4s forwards;
+  position: fixed; bottom: 60px; left: calc((100vw - var(--rail-w))/2);
+  transform: translateX(-50%); font-size: 11px; color: #c0b8ae;
+  z-index: 100; pointer-events: none; animation: hintFade 4s forwards;
 }
 .hint kbd {
-  display: inline-block; padding: 2px 7px; background: #f0ebe4;
-  border-radius: 4px; border: 1px solid #ddd; font-size: 11px;
+  display: inline-block; padding: 1px 6px; background: #f0ebe4;
+  border-radius: 3px; border: 1px solid #ddd; font-size: 10px;
 }
 @keyframes hintFade { 0%,70%{opacity:1} 100%{opacity:0} }
 
 /* ===== Decorative ===== */
-.deco {
-  position: absolute; border-radius: 50%; opacity: 0.05; pointer-events: none;
-}
-.deco-a { width: 380px; height: 380px; background: var(--accent); top: -90px; right: -90px; }
-.deco-b { width: 260px; height: 260px; background: #8b6f5e; bottom: -60px; left: -60px; }
+.deco { position: absolute; border-radius: 50%; opacity: 0.05; pointer-events: none; }
+.deco-a { width: 340px; height: 340px; background: var(--accent); top: -80px; right: -80px; }
+.deco-b { width: 240px; height: 240px; background: #8b6f5e; bottom: -50px; left: -50px; }
 
 /* ===== Mobile ===== */
 @media (max-width: 768px) {
-  .slide { padding: 20px 24px; }
-  .slide.content { padding-top: 48px; }
+  :root { --rail-w: 0px; }
+  .rail { display: none; }
+  .slide { padding: 20px; }
+  .slide.content { padding-top: 44px; }
   .cover-title { font-size: 2em; }
-  .chapter-title { font-size: 1.6em; }
-  .head-title { font-size: 1.15em; }
-  .cover-stats { gap: 10px; }
-  .stat-card { min-width: 90px; padding: 12px 16px; }
+  .chapter-title, .part-title { font-size: 1.5em; }
+  .head-title { font-size: 1.1em; }
+  .stat-card { min-width: 90px; padding: 12px; }
   .toc-grid { grid-template-columns: 1fr 1fr; }
-  .slide-body { max-height: calc(100vh - 140px); }
-  .nav { padding: 6px 12px; bottom: 12px; }
-  .dots { max-width: 140px; }
+  .slide-body { max-height: calc(100vh - 130px); }
+  .nav { bottom: 10px; padding: 4px 10px; }
+  .fs-btn { right: 12px; }
 }
 
 @media print {
   .slide { page-break-after: always; position: relative; height: auto; }
-  .nav, .fs-btn, .hint, .progress { display: none; }
+  .nav, .fs-btn, .hint, .progress, .rail { display: none; }
 }
 </style>
 </head>
@@ -302,89 +317,116 @@ body {
     <div class="cover-badge">PRODUCT REQUIREMENTS</div>
     <div class="cover-title">Basalt OS</div>
     <div class="cover-sub">清算分账系统需求文档</div>
-    <div class="cover-stats">
-      <div class="stat-card"><span class="stat-num">19</span><span class="stat-label">核心模块</span></div>
-      <div class="stat-card"><span class="stat-num">48</span><span class="stat-label">功能页面</span></div>
-      <div class="stat-card"><span class="stat-num">69</span><span class="stat-label">幻灯片</span></div>
-    </div>
   </div>
-</div><div class="slide chapter">
+</div>
+<div class="slide chapter">
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">📑</div>
     <div class="chapter-num">CONTENTS</div>
     <div class="chapter-title">目录</div>
     <div class="toc-grid"><div class="toc-card" onclick="go(2)">
-              <div class="toc-card-icon">📌</div>
-              <div class="toc-card-text">清算分账</div>
-            </div><div class="toc-card" onclick="go(3)">
-              <div class="toc-card-icon">🏦</div>
-              <div class="toc-card-text">品牌专户</div>
-            </div><div class="toc-card" onclick="go(12)">
-              <div class="toc-card-icon">🏪</div>
-              <div class="toc-card-text">门店</div>
-            </div><div class="toc-card" onclick="go(16)">
-              <div class="toc-card-icon">📄</div>
-              <div class="toc-card-text">清算订单（三联）</div>
-            </div><div class="toc-card" onclick="go(19)">
-              <div class="toc-card-icon">📁</div>
-              <div class="toc-card-text">清算文件</div>
-            </div><div class="toc-card" onclick="go(20)">
-              <div class="toc-card-icon">📦</div>
-              <div class="toc-card-text">清算批次</div>
-            </div><div class="toc-card" onclick="go(25)">
-              <div class="toc-card-icon">🔐</div>
-              <div class="toc-card-text">签约授权</div>
-            </div><div class="toc-card" onclick="go(40)">
-              <div class="toc-card-icon">🌐</div>
-              <div class="toc-card-text">区域划分</div>
-            </div><div class="toc-card" onclick="go(41)">
-              <div class="toc-card-icon">🏷️</div>
-              <div class="toc-card-text">业务属性</div>
-            </div><div class="toc-card" onclick="go(42)">
-              <div class="toc-card-icon">👤</div>
-              <div class="toc-card-text">角色</div>
-            </div><div class="toc-card" onclick="go(43)">
-              <div class="toc-card-icon">💳</div>
-              <div class="toc-card-text">账户</div>
-            </div><div class="toc-card" onclick="go(48)">
-              <div class="toc-card-icon">🔄</div>
-              <div class="toc-card-text">商户入驻状态</div>
-            </div><div class="toc-card" onclick="go(49)">
-              <div class="toc-card-icon">📄</div>
-              <div class="toc-card-text">清算订单状态</div>
-            </div><div class="toc-card" onclick="go(51)">
-              <div class="toc-card-icon">📦</div>
-              <div class="toc-card-text">清算批次号生成规则</div>
-            </div><div class="toc-card" onclick="go(52)">
-              <div class="toc-card-icon">📁</div>
-              <div class="toc-card-text">清算文件状态</div>
-            </div><div class="toc-card" onclick="go(53)">
-              <div class="toc-card-icon">📦</div>
-              <div class="toc-card-text">清算批次状态</div>
-            </div><div class="toc-card" onclick="go(54)">
-              <div class="toc-card-icon">🔢</div>
-              <div class="toc-card-text">系统流水号</div>
-            </div><div class="toc-card" onclick="go(58)">
-              <div class="toc-card-icon">🔏</div>
-              <div class="toc-card-text">授权代付</div>
-            </div><div class="toc-card" onclick="go(63)">
-              <div class="toc-card-icon">🔒</div>
-              <div class="toc-card-text">银行卡号和手机号脱敏规则</div>
-            </div></div>
+  <div class="toc-card-icon">📊</div>
+  <div class="toc-card-text">清算分账</div>
+</div><div class="toc-card" onclick="go(3)">
+  <div class="toc-card-icon">🏦</div>
+  <div class="toc-card-text">品牌专户</div>
+</div><div class="toc-card" onclick="go(6)">
+  <div class="toc-card-icon">🏢</div>
+  <div class="toc-card-text">总部公司</div>
+</div><div class="toc-card" onclick="go(9)">
+  <div class="toc-card-icon">🗺️</div>
+  <div class="toc-card-text">区域公司</div>
+</div><div class="toc-card" onclick="go(12)">
+  <div class="toc-card-icon">🏪</div>
+  <div class="toc-card-text">门店</div>
+</div><div class="toc-card" onclick="go(15)">
+  <div class="toc-card-icon">🚚</div>
+  <div class="toc-card-text">供应商</div>
+</div><div class="toc-card" onclick="go(16)">
+  <div class="toc-card-icon">📄</div>
+  <div class="toc-card-text">清算订单（三联）</div>
+</div><div class="toc-card" onclick="go(17)">
+  <div class="toc-card-icon">📄</div>
+  <div class="toc-card-text">清算订单（收钱吧）</div>
+</div><div class="toc-card" onclick="go(20)">
+  <div class="toc-card-icon">📁</div>
+  <div class="toc-card-text">清算文件</div>
+</div><div class="toc-card" onclick="go(21)">
+  <div class="toc-card-icon">📦</div>
+  <div class="toc-card-text">清算批次</div>
+</div><div class="toc-card" onclick="go(26)">
+  <div class="toc-card-icon">🔐</div>
+  <div class="toc-card-text">签约授权</div>
+</div><div class="toc-card" onclick="go(31)">
+  <div class="toc-card-icon">💰</div>
+  <div class="toc-card-text">付款</div>
+</div><div class="toc-card" onclick="go(37)">
+  <div class="toc-card-icon">⚙️</div>
+  <div class="toc-card-text">平台管理</div>
+</div><div class="toc-card" onclick="go(38)">
+  <div class="toc-card-icon">🌐</div>
+  <div class="toc-card-text">区域划分</div>
+</div><div class="toc-card" onclick="go(39)">
+  <div class="toc-card-icon">🏷️</div>
+  <div class="toc-card-text">业务属性</div>
+</div><div class="toc-card" onclick="go(40)">
+  <div class="toc-card-icon">👤</div>
+  <div class="toc-card-text">角色</div>
+</div><div class="toc-card" onclick="go(41)">
+  <div class="toc-card-icon">💳</div>
+  <div class="toc-card-text">账户</div>
+</div><div class="toc-card" onclick="go(42)">
+  <div class="toc-card-icon">📜</div>
+  <div class="toc-card-text">全局规则</div>
+</div><div class="toc-card" onclick="go(43)">
+  <div class="toc-card-icon">🏪</div>
+  <div class="toc-card-text">公司和门店编码生成规则</div>
+</div><div class="toc-card" onclick="go(48)">
+  <div class="toc-card-icon">🔄</div>
+  <div class="toc-card-text">商户入驻状态</div>
+</div><div class="toc-card" onclick="go(49)">
+  <div class="toc-card-icon">📄</div>
+  <div class="toc-card-text">清算订单状态</div>
+</div><div class="toc-card" onclick="go(51)">
+  <div class="toc-card-icon">📦</div>
+  <div class="toc-card-text">清算批次号生成规则</div>
+</div><div class="toc-card" onclick="go(52)">
+  <div class="toc-card-icon">📁</div>
+  <div class="toc-card-text">清算文件状态</div>
+</div><div class="toc-card" onclick="go(53)">
+  <div class="toc-card-icon">📦</div>
+  <div class="toc-card-text">清算批次状态</div>
+</div><div class="toc-card" onclick="go(54)">
+  <div class="toc-card-icon">🔢</div>
+  <div class="toc-card-text">系统流水号</div>
+</div><div class="toc-card" onclick="go(55)">
+  <div class="toc-card-icon">📝</div>
+  <div class="toc-card-text">协议代扣</div>
+</div><div class="toc-card" onclick="go(59)">
+  <div class="toc-card-icon">🔏</div>
+  <div class="toc-card-text">授权代付</div>
+</div><div class="toc-card" onclick="go(64)">
+  <div class="toc-card-icon">🔒</div>
+  <div class="toc-card-text">银行卡号和手机号脱敏规则</div>
+</div><div class="toc-card" onclick="go(65)">
+  <div class="toc-card-icon">💰</div>
+  <div class="toc-card-text">对外付款</div>
+</div></div>
   </div>
-</div><div class="slide chapter">
+</div>
+<div class="slide part">
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
-    <div class="chapter-icon">📌</div>
-    <div class="chapter-num">SECTION 01</div>
-    <div class="chapter-title">清算分账</div>
+    <div class="part-badge">PART 01</div>
+    <div class="part-title">清算分账</div>
+    <div class="part-desc">本文档需配合产品原型阅读。原型：CoDesign：https://codesign.qq.com/s/671147766598162AxHub：https://axhub.im/ax9/71215a188e6b6ee5本文档仅描述产品原型中关键功能的逻辑和规则，详细功能列表、功能优先级、归属版本迭代等以Basalt_Finance开发看板为准。包含版本迭代：版本与需求管理详见Basalt_Fina</div>
   </div>
 </div><div class="slide chapter">
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">🏦</div>
-    <div class="chapter-num">SECTION 02</div>
+    <div class="chapter-num">SECTION 01</div>
     <div class="chapter-title">品牌专户</div>
   </div>
 </div><div class="slide content">
@@ -550,16 +592,23 @@ body {
 </li>
 </ol></div>
   </div>
+</div><div class="slide chapter">
+  <div class="deco deco-a"></div><div class="deco deco-b"></div>
+  <div class="slide-inner" style="text-align:center">
+    <div class="chapter-icon">🏢</div>
+    <div class="chapter-num">SECTION 02</div>
+    <div class="chapter-title">总部公司</div>
+  </div>
 </div><div class="slide content">
   <div class="slide-inner">
     <div class="slide-head">
       <div class="head-icon">🏢</div>
       <div>
-        <div class="head-title">总部公司列表</div>
-        <div class="head-breadcrumb">品牌专户</div>
+        <div class="head-title">总部公司</div>
+        <div class="head-breadcrumb">总部公司</div>
       </div>
     </div>
-    <div class="slide-body"><ol>
+    <div class="slide-body"><h4>总部公司列表</h4><ol>
 <li>
 <p>筛选总部公司</p>
 <ol>
@@ -781,11 +830,11 @@ body {
     <div class="slide-head">
       <div class="head-icon">🏢</div>
       <div>
-        <div class="head-title">总部公司商户列表</div>
-        <div class="head-breadcrumb">品牌专户</div>
+        <div class="head-title">总部公司商户</div>
+        <div class="head-breadcrumb">总部公司</div>
       </div>
     </div>
-    <div class="slide-body"><ol>
+    <div class="slide-body"><h4>总部公司商户列表</h4><ol>
 <li>
 <p>筛选商户</p>
 <ol>
@@ -948,18 +997,7 @@ body {
 </li>
 </ol>
 </li>
-</ol></div>
-  </div>
-</div><div class="slide content">
-  <div class="slide-inner">
-    <div class="slide-head">
-      <div class="head-icon">🤝</div>
-      <div>
-        <div class="head-title">商户详情</div>
-        <div class="head-breadcrumb">品牌专户</div>
-      </div>
-    </div>
-    <div class="slide-body"><h5 id="_11">资金账户：</h5><ol>
+</ol><h4>商户详情</h4><h5 id="_11">资金账户：</h5><ol>
 <li>
 <p>账户信息</p>
 <ol>
@@ -1282,13 +1320,20 @@ body {
 </li>
 </ol></div>
   </div>
+</div><div class="slide chapter">
+  <div class="deco deco-a"></div><div class="deco deco-b"></div>
+  <div class="slide-inner" style="text-align:center">
+    <div class="chapter-icon">🗺️</div>
+    <div class="chapter-num">SECTION 03</div>
+    <div class="chapter-title">区域公司</div>
+  </div>
 </div><div class="slide content">
   <div class="slide-inner">
     <div class="slide-head">
       <div class="head-icon">🗺️</div>
       <div>
         <div class="head-title">区域公司</div>
-        <div class="head-breadcrumb">品牌专户</div>
+        <div class="head-breadcrumb">区域公司</div>
       </div>
     </div>
     <div class="slide-body"><ol>
@@ -1552,11 +1597,11 @@ body {
     <div class="slide-head">
       <div class="head-icon">🗺️</div>
       <div>
-        <div class="head-title">区域公司商户列表</div>
-        <div class="head-breadcrumb">品牌专户</div>
+        <div class="head-title">区域公司商户</div>
+        <div class="head-breadcrumb">区域公司</div>
       </div>
     </div>
-    <div class="slide-body"><ol>
+    <div class="slide-body"><h4>区域公司商户列表</h4><ol>
 <li>
 <p>筛选区域公司商户</p>
 <ol>
@@ -1687,18 +1732,7 @@ body {
 </li>
 </ol>
 </li>
-</ol></div>
-  </div>
-</div><div class="slide content">
-  <div class="slide-inner">
-    <div class="slide-head">
-      <div class="head-icon">🤝</div>
-      <div>
-        <div class="head-title">商户详情</div>
-        <div class="head-breadcrumb">品牌专户</div>
-      </div>
-    </div>
-    <div class="slide-body"><h5 id="_21">资金账户</h5><ol>
+</ol><h4>商户详情</h4><h5 id="_21">资金账户</h5><ol>
 <li>
 <p>账户信息</p>
 <ol>
@@ -1984,7 +2018,7 @@ body {
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">🏪</div>
-    <div class="chapter-num">SECTION 03</div>
+    <div class="chapter-num">SECTION 04</div>
     <div class="chapter-title">门店</div>
   </div>
 </div><div class="slide content">
@@ -2202,11 +2236,11 @@ body {
     <div class="slide-head">
       <div class="head-icon">🏪</div>
       <div>
-        <div class="head-title">门店商户列表</div>
+        <div class="head-title">门店商户</div>
         <div class="head-breadcrumb">门店</div>
       </div>
     </div>
-    <div class="slide-body"><ol>
+    <div class="slide-body"><h4>门店商户列表</h4><ol>
 <li>
 <p>筛选商户</p>
 <ol>
@@ -2340,18 +2374,7 @@ body {
 </li>
 </ol>
 </li>
-</ol></div>
-  </div>
-</div><div class="slide content">
-  <div class="slide-inner">
-    <div class="slide-head">
-      <div class="head-icon">🤝</div>
-      <div>
-        <div class="head-title">商户详情</div>
-        <div class="head-breadcrumb">门店</div>
-      </div>
-    </div>
-    <div class="slide-body"><ol>
+</ol><h4>商户详情</h4><ol>
 <li>
 <p>资金账户：</p>
 <ol>
@@ -2643,9 +2666,23 @@ body {
 </div><div class="slide chapter">
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
+    <div class="chapter-icon">🚚</div>
+    <div class="chapter-num">SECTION 05</div>
+    <div class="chapter-title">供应商</div>
+  </div>
+</div><div class="slide chapter">
+  <div class="deco deco-a"></div><div class="deco deco-b"></div>
+  <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">📄</div>
-    <div class="chapter-num">SECTION 04</div>
+    <div class="chapter-num">SECTION 06</div>
     <div class="chapter-title">清算订单（三联）</div>
+  </div>
+</div><div class="slide chapter">
+  <div class="deco deco-a"></div><div class="deco deco-b"></div>
+  <div class="slide-inner" style="text-align:center">
+    <div class="chapter-icon">📄</div>
+    <div class="chapter-num">SECTION 07</div>
+    <div class="chapter-title">清算订单（收钱吧）</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
@@ -2653,7 +2690,7 @@ body {
       <div class="head-icon">📄</div>
       <div>
         <div class="head-title">清算订单</div>
-        <div class="head-breadcrumb">清算订单（三联）</div>
+        <div class="head-breadcrumb">清算订单（收钱吧）</div>
       </div>
     </div>
     <div class="slide-body"><ol>
@@ -3208,7 +3245,7 @@ body {
       <div class="head-icon">🖥️</div>
       <div>
         <div class="head-title">POS设置</div>
-        <div class="head-breadcrumb">清算订单（三联）</div>
+        <div class="head-breadcrumb">清算订单（收钱吧）</div>
       </div>
     </div>
     <div class="slide-body"><ol>
@@ -3549,14 +3586,14 @@ body {
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">📁</div>
-    <div class="chapter-num">SECTION 05</div>
+    <div class="chapter-num">SECTION 08</div>
     <div class="chapter-title">清算文件</div>
   </div>
 </div><div class="slide chapter">
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">📦</div>
-    <div class="chapter-num">SECTION 06</div>
+    <div class="chapter-num">SECTION 09</div>
     <div class="chapter-title">清算批次</div>
   </div>
 </div><div class="slide content">
@@ -3950,7 +3987,7 @@ body {
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">🔐</div>
-    <div class="chapter-num">SECTION 07</div>
+    <div class="chapter-num">SECTION 10</div>
     <div class="chapter-title">签约授权</div>
   </div>
 </div><div class="slide content">
@@ -4396,13 +4433,13 @@ body {
 </div><div class="slide content">
   <div class="slide-inner">
     <div class="slide-head">
-      <div class="head-icon">📌</div>
+      <div class="head-icon">📑</div>
       <div>
-        <div class="head-title">合约列表</div>
+        <div class="head-title">合约管理</div>
         <div class="head-breadcrumb">签约授权</div>
       </div>
     </div>
-    <div class="slide-body"><ol>
+    <div class="slide-body"><h4>合约列表</h4><ol>
 <li>
 <p>一个合约只能归属一个商户。</p>
 </li>
@@ -4644,18 +4681,7 @@ body {
 </li>
 </ol>
 </li>
-</ol></div>
-  </div>
-</div><div class="slide content">
-  <div class="slide-inner">
-    <div class="slide-head">
-      <div class="head-icon">📌</div>
-      <div>
-        <div class="head-title">合约详情</div>
-        <div class="head-breadcrumb">签约授权</div>
-      </div>
-    </div>
-    <div class="slide-body"><h5 id="_49">协议代扣</h5><ol>
+</ol><h4>合约详情</h4><h5 id="_49">协议代扣</h5><ol>
 <li>
 <p>合约号：<code>ArrangementNo</code>字段的值。</p>
 </li>
@@ -4809,11 +4835,11 @@ body {
     <div class="slide-head">
       <div class="head-icon">📝</div>
       <div>
-        <div class="head-title">授权记录（申请单）的产生</div>
+        <div class="head-title">授权记录（授权申请单）</div>
         <div class="head-breadcrumb">签约授权</div>
       </div>
     </div>
-    <div class="slide-body"><ol>
+    <div class="slide-body"><h4>授权记录（申请单）的产生</h4><ol>
 <li>
 <p>授权记录（也称为申请单）是合约的产生过程。</p>
 <ol>
@@ -4853,18 +4879,7 @@ body {
 </li>
 </ol>
 </li>
-</ol></div>
-  </div>
-</div><div class="slide content">
-  <div class="slide-inner">
-    <div class="slide-head">
-      <div class="head-icon">📝</div>
-      <div>
-        <div class="head-title">授权记录列表</div>
-        <div class="head-breadcrumb">签约授权</div>
-      </div>
-    </div>
-    <div class="slide-body"><ol>
+</ol><h4>授权记录列表</h4><ol>
 <li>
 <p>一个合约可对应多个授权记录，通过合约号可查询该合约的签约，修改，解约，解约审核的授权记录。</p>
 </li>
@@ -5620,13 +5635,20 @@ body {
 </li>
 </ol></div>
   </div>
+</div><div class="slide chapter">
+  <div class="deco deco-a"></div><div class="deco deco-b"></div>
+  <div class="slide-inner" style="text-align:center">
+    <div class="chapter-icon">💰</div>
+    <div class="chapter-num">SECTION 11</div>
+    <div class="chapter-title">付款</div>
+  </div>
 </div><div class="slide content">
   <div class="slide-inner">
     <div class="slide-head">
       <div class="head-icon">💰</div>
       <div>
         <div class="head-title">付款记录</div>
-        <div class="head-breadcrumb">签约授权</div>
+        <div class="head-breadcrumb">付款</div>
       </div>
     </div>
     <div class="slide-body"><ol>
@@ -5904,23 +5926,12 @@ body {
       <div class="head-icon">💰</div>
       <div>
         <div class="head-title">付款单详情</div>
-        <div class="head-breadcrumb">签约授权</div>
+        <div class="head-breadcrumb">付款</div>
       </div>
     </div>
     <div class="slide-body"><ol>
 <li>接口调用和数据来源同付款单列表。</li>
-</ol></div>
-  </div>
-</div><div class="slide content">
-  <div class="slide-inner">
-    <div class="slide-head">
-      <div class="head-icon">📝</div>
-      <div>
-        <div class="head-title">协议代扣</div>
-        <div class="head-breadcrumb">签约授权</div>
-      </div>
-    </div>
-    <div class="slide-body"><ol>
+</ol><h4>协议代扣</h4><ol>
 <li>
 <p>业务流水号：发起付款申请时系统生成的业务流水号，对应网商<code>OutTradeNo</code>字段值。</p>
 </li>
@@ -6024,18 +6035,7 @@ body {
 <li>
 <p>错误描述：对应网商<code>ErrorDesc</code>字段值，状态为「FAIL」时出现。</p>
 </li>
-</ol></div>
-  </div>
-</div><div class="slide content">
-  <div class="slide-inner">
-    <div class="slide-head">
-      <div class="head-icon">🔏</div>
-      <div>
-        <div class="head-title">授权代付</div>
-        <div class="head-breadcrumb">签约授权</div>
-      </div>
-    </div>
-    <div class="slide-body"><ol>
+</ol><h4>授权代付</h4><ol>
 <li>
 <p>业务流水号：发起付款申请时系统生成的业务流水号，对应网商<code>OutTradeNo</code>字段值。</p>
 </li>
@@ -6151,7 +6151,7 @@ body {
       <div class="head-icon">💰</div>
       <div>
         <div class="head-title">批量付款</div>
-        <div class="head-breadcrumb">签约授权</div>
+        <div class="head-breadcrumb">付款</div>
       </div>
     </div>
     <div class="slide-body"><p>用户在前置操作中发起付款时，默认进入「批次付款」标签页。</p><ol>
@@ -6389,7 +6389,7 @@ body {
       <div class="head-icon">💰</div>
       <div>
         <div class="head-title">单笔付款</div>
-        <div class="head-breadcrumb">签约授权</div>
+        <div class="head-breadcrumb">付款</div>
       </div>
     </div>
     <div class="slide-body"><ol>
@@ -6610,13 +6610,13 @@ body {
 </div><div class="slide content">
   <div class="slide-inner">
     <div class="slide-head">
-      <div class="head-icon">📝</div>
+      <div class="head-icon">💰</div>
       <div>
-        <div class="head-title">协议代扣</div>
-        <div class="head-breadcrumb">签约授权</div>
+        <div class="head-title">发起付款接口调用</div>
+        <div class="head-breadcrumb">付款</div>
       </div>
     </div>
-    <div class="slide-body"><table>
+    <div class="slide-body"><h4>协议代扣</h4><table>
 <thead>
 <tr>
 <th><strong>序号</strong></th>
@@ -6799,18 +6799,7 @@ body {
         ]
     }
 }
-</code></pre></div>
-  </div>
-</div><div class="slide content">
-  <div class="slide-inner">
-    <div class="slide-head">
-      <div class="head-icon">🔏</div>
-      <div>
-        <div class="head-title">授权代付</div>
-        <div class="head-breadcrumb">签约授权</div>
-      </div>
-    </div>
-    <div class="slide-body"><table>
+</code></pre><h4>授权代付</h4><table>
 <thead>
 <tr>
 <th><strong>参数名称</strong></th>
@@ -6988,33 +6977,54 @@ body {
 </tbody>
 </table></div>
   </div>
+</div><div class="slide part">
+  <div class="deco deco-a"></div><div class="deco deco-b"></div>
+  <div class="slide-inner" style="text-align:center">
+    <div class="part-badge">PART 02</div>
+    <div class="part-title">平台管理</div>
+    
+  </div>
 </div><div class="slide chapter">
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">🌐</div>
-    <div class="chapter-num">SECTION 08</div>
+    <div class="chapter-num">SECTION 12</div>
     <div class="chapter-title">区域划分</div>
   </div>
 </div><div class="slide chapter">
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">🏷️</div>
-    <div class="chapter-num">SECTION 09</div>
+    <div class="chapter-num">SECTION 13</div>
     <div class="chapter-title">业务属性</div>
   </div>
 </div><div class="slide chapter">
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">👤</div>
-    <div class="chapter-num">SECTION 10</div>
+    <div class="chapter-num">SECTION 14</div>
     <div class="chapter-title">角色</div>
   </div>
 </div><div class="slide chapter">
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">💳</div>
-    <div class="chapter-num">SECTION 11</div>
+    <div class="chapter-num">SECTION 15</div>
     <div class="chapter-title">账户</div>
+  </div>
+</div><div class="slide part">
+  <div class="deco deco-a"></div><div class="deco deco-b"></div>
+  <div class="slide-inner" style="text-align:center">
+    <div class="part-badge">PART 03</div>
+    <div class="part-title">全局规则</div>
+    
+  </div>
+</div><div class="slide chapter">
+  <div class="deco deco-a"></div><div class="deco deco-b"></div>
+  <div class="slide-inner" style="text-align:center">
+    <div class="chapter-icon">🏪</div>
+    <div class="chapter-num">SECTION 16</div>
+    <div class="chapter-title">公司和门店编码生成规则</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
@@ -7022,7 +7032,7 @@ body {
       <div class="head-icon">🏢</div>
       <div>
         <div class="head-title">总部公司编码</div>
-        <div class="head-breadcrumb">账户</div>
+        <div class="head-breadcrumb">公司和门店编码生成规则</div>
       </div>
     </div>
     <div class="slide-body"><ol>
@@ -7057,7 +7067,7 @@ body {
       <div class="head-icon">🗺️</div>
       <div>
         <div class="head-title">区域公司编码</div>
-        <div class="head-breadcrumb">账户</div>
+        <div class="head-breadcrumb">公司和门店编码生成规则</div>
       </div>
     </div>
     <div class="slide-body"><ol>
@@ -7095,7 +7105,7 @@ body {
       <div class="head-icon">🏪</div>
       <div>
         <div class="head-title">门店编码</div>
-        <div class="head-breadcrumb">账户</div>
+        <div class="head-breadcrumb">公司和门店编码生成规则</div>
       </div>
     </div>
     <div class="slide-body"><ol>
@@ -7133,7 +7143,7 @@ body {
       <div class="head-icon">🔢</div>
       <div>
         <div class="head-title">外部商户号（商户编码）</div>
-        <div class="head-breadcrumb">账户</div>
+        <div class="head-breadcrumb">公司和门店编码生成规则</div>
       </div>
     </div>
     <div class="slide-body"><ol>
@@ -7166,14 +7176,14 @@ body {
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">🔄</div>
-    <div class="chapter-num">SECTION 12</div>
+    <div class="chapter-num">SECTION 17</div>
     <div class="chapter-title">商户入驻状态</div>
   </div>
 </div><div class="slide chapter">
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">📄</div>
-    <div class="chapter-num">SECTION 13</div>
+    <div class="chapter-num">SECTION 18</div>
     <div class="chapter-title">清算订单状态</div>
   </div>
 </div><div class="slide content">
@@ -7206,29 +7216,36 @@ body {
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">📦</div>
-    <div class="chapter-num">SECTION 14</div>
+    <div class="chapter-num">SECTION 19</div>
     <div class="chapter-title">清算批次号生成规则</div>
   </div>
 </div><div class="slide chapter">
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">📁</div>
-    <div class="chapter-num">SECTION 15</div>
+    <div class="chapter-num">SECTION 20</div>
     <div class="chapter-title">清算文件状态</div>
   </div>
 </div><div class="slide chapter">
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">📦</div>
-    <div class="chapter-num">SECTION 16</div>
+    <div class="chapter-num">SECTION 21</div>
     <div class="chapter-title">清算批次状态</div>
   </div>
 </div><div class="slide chapter">
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">🔢</div>
-    <div class="chapter-num">SECTION 17</div>
+    <div class="chapter-num">SECTION 22</div>
     <div class="chapter-title">系统流水号</div>
+  </div>
+</div><div class="slide chapter">
+  <div class="deco deco-a"></div><div class="deco deco-b"></div>
+  <div class="slide-inner" style="text-align:center">
+    <div class="chapter-icon">📝</div>
+    <div class="chapter-num">SECTION 23</div>
+    <div class="chapter-title">协议代扣</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
@@ -7236,7 +7253,7 @@ body {
       <div class="head-icon">📝</div>
       <div>
         <div class="head-title">协议代扣申请单类型</div>
-        <div class="head-breadcrumb">系统流水号</div>
+        <div class="head-breadcrumb">协议代扣</div>
       </div>
     </div>
     <div class="slide-body"><table>
@@ -7280,7 +7297,7 @@ body {
       <div class="head-icon">🔄</div>
       <div>
         <div class="head-title">协议代扣申请单状态</div>
-        <div class="head-breadcrumb">系统流水号</div>
+        <div class="head-breadcrumb">协议代扣</div>
       </div>
     </div>
     <div class="slide-body"><ol>
@@ -7330,7 +7347,7 @@ body {
       <div class="head-icon">🔄</div>
       <div>
         <div class="head-title">协议代扣合约状态</div>
-        <div class="head-breadcrumb">系统流水号</div>
+        <div class="head-breadcrumb">协议代扣</div>
       </div>
     </div>
     <div class="slide-body"><ol>
@@ -7440,7 +7457,7 @@ body {
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">🔏</div>
-    <div class="chapter-num">SECTION 18</div>
+    <div class="chapter-num">SECTION 24</div>
     <div class="chapter-title">授权代付</div>
   </div>
 </div><div class="slide content">
@@ -7699,19 +7716,26 @@ body {
   <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="chapter-icon">🔒</div>
-    <div class="chapter-num">SECTION 19</div>
+    <div class="chapter-num">SECTION 25</div>
     <div class="chapter-title">银行卡号和手机号脱敏规则</div>
+  </div>
+</div><div class="slide chapter">
+  <div class="deco deco-a"></div><div class="deco deco-b"></div>
+  <div class="slide-inner" style="text-align:center">
+    <div class="chapter-icon">💰</div>
+    <div class="chapter-num">SECTION 26</div>
+    <div class="chapter-title">对外付款</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
     <div class="slide-head">
-      <div class="head-icon">💰</div>
+      <div class="head-icon">🔢</div>
       <div>
-        <div class="head-title">批量付款业务流水号</div>
-        <div class="head-breadcrumb">银行卡号和手机号脱敏规则</div>
+        <div class="head-title">业务流水号</div>
+        <div class="head-breadcrumb">对外付款</div>
       </div>
     </div>
-    <div class="slide-body"><h5 id="_97">批量付款批次号</h5><ol>
+    <div class="slide-body"><h4>批量付款业务流水号</h4><h5 id="_97">批量付款批次号</h5><ol>
 <li>
 <p>格式：<code>{3位自增数字编号}{YYYYMMDD}</code></p>
 </li>
@@ -7765,18 +7789,7 @@ body {
 <li>
 <p>删改规则：业务流水号一经生成不可删除，不可修改。</p>
 </li>
-</ol></div>
-  </div>
-</div><div class="slide content">
-  <div class="slide-inner">
-    <div class="slide-head">
-      <div class="head-icon">💰</div>
-      <div>
-        <div class="head-title">单笔付款业务流水号</div>
-        <div class="head-breadcrumb">银行卡号和手机号脱敏规则</div>
-      </div>
-    </div>
-    <div class="slide-body"><p>映射网商字段：</p><ol>
+</ol><h4>单笔付款业务流水号</h4><p>映射网商字段：</p><ol>
 <li>
 <p>协议代扣：代扣业务订单号，OutTradeNo</p>
 </li>
@@ -7819,11 +7832,11 @@ body {
     <div class="slide-head">
       <div class="head-icon">💰</div>
       <div>
-        <div class="head-title">协议代扣付款单状态</div>
-        <div class="head-breadcrumb">银行卡号和手机号脱敏规则</div>
+        <div class="head-title">付款单状态</div>
+        <div class="head-breadcrumb">对外付款</div>
       </div>
     </div>
-    <div class="slide-body"><ol>
+    <div class="slide-body"><h4>协议代扣付款单状态</h4><ol>
 <li>
 <p>包含协议代扣批量支付和单笔支付的业务订单。</p>
 </li>
@@ -7874,18 +7887,7 @@ body {
 <td>代扣执行失败，资金未划转</td>
 </tr>
 </tbody>
-</table></div>
-  </div>
-</div><div class="slide content">
-  <div class="slide-inner">
-    <div class="slide-head">
-      <div class="head-icon">💰</div>
-      <div>
-        <div class="head-title">授权代付付款单状态</div>
-        <div class="head-breadcrumb">银行卡号和手机号脱敏规则</div>
-      </div>
-    </div>
-    <div class="slide-body"><ol>
+</table><h4>授权代付付款单状态</h4><ol>
 <li>
 <p>包含授权代付批量支付和单笔支付的业务订单。</p>
 </li>
@@ -7944,7 +7946,7 @@ body {
       <div class="head-icon">💰</div>
       <div>
         <div class="head-title">批量付款批次状态</div>
-        <div class="head-breadcrumb">银行卡号和手机号脱敏规则</div>
+        <div class="head-breadcrumb">对外付款</div>
       </div>
     </div>
     <div class="slide-body"><ol>
@@ -7993,14 +7995,14 @@ body {
 </ol></div>
   </div>
 </div></div>
+<nav class="rail"><div class="rail-label" data-i="0" onclick="go(0)"><span class="rail-ico">🏠</span>封面</div><div class="rail-label" data-i="1" onclick="go(1)"><span class="rail-ico">📑</span>目录</div><div class="rail-label" data-i="2" onclick="go(2)"><span class="rail-ico">📊</span>清算分账</div><div class="rail-label" data-i="3" onclick="go(3)"><span class="rail-ico">🏦</span>品牌专户</div><div class="rail-dot" data-i="4" onclick="go(4)" title="品牌专户"></div><div class="rail-dot" data-i="5" onclick="go(5)" title="来账明细"></div><div class="rail-sep"></div><div class="rail-label" data-i="6" onclick="go(6)"><span class="rail-ico">🏢</span>总部公司</div><div class="rail-dot" data-i="7" onclick="go(7)" title="总部公司"></div><div class="rail-dot" data-i="8" onclick="go(8)" title="总部公司商户"></div><div class="rail-sep"></div><div class="rail-label" data-i="9" onclick="go(9)"><span class="rail-ico">🗺️</span>区域公司</div><div class="rail-dot" data-i="10" onclick="go(10)" title="区域公司"></div><div class="rail-dot" data-i="11" onclick="go(11)" title="区域公司商户"></div><div class="rail-sep"></div><div class="rail-label" data-i="12" onclick="go(12)"><span class="rail-ico">🏪</span>门店</div><div class="rail-dot" data-i="13" onclick="go(13)" title="门店列表"></div><div class="rail-dot" data-i="14" onclick="go(14)" title="门店商户"></div><div class="rail-sep"></div><div class="rail-label" data-i="15" onclick="go(15)"><span class="rail-ico">🚚</span>供应商</div><div class="rail-label" data-i="16" onclick="go(16)"><span class="rail-ico">📄</span>清算订单（三联）</div><div class="rail-label" data-i="17" onclick="go(17)"><span class="rail-ico">📄</span>清算订单（收钱吧...</div><div class="rail-dot" data-i="18" onclick="go(18)" title="清算订单"></div><div class="rail-dot" data-i="19" onclick="go(19)" title="POS设置"></div><div class="rail-sep"></div><div class="rail-label" data-i="20" onclick="go(20)"><span class="rail-ico">📁</span>清算文件</div><div class="rail-label" data-i="21" onclick="go(21)"><span class="rail-ico">📦</span>清算批次</div><div class="rail-dot" data-i="22" onclick="go(22)" title="新建批次"></div><div class="rail-dot" data-i="23" onclick="go(23)" title="批次管理（批次列表）"></div><div class="rail-dot" data-i="24" onclick="go(24)" title="批次详情"></div><div class="rail-dot" data-i="25" onclick="go(25)" title="编辑批次"></div><div class="rail-sep"></div><div class="rail-label" data-i="26" onclick="go(26)"><span class="rail-ico">🔐</span>签约授权</div><div class="rail-dot" data-i="27" onclick="go(27)" title="新增/修改授权代付合约-授权代付合约产生"></div><div class="rail-dot" data-i="28" onclick="go(28)" title="合约管理"></div><div class="rail-dot" data-i="29" onclick="go(29)" title="授权记录（授权申请单）"></div><div class="rail-dot" data-i="30" onclick="go(30)" title="授权记录详情（申请单详情）"></div><div class="rail-sep"></div><div class="rail-label" data-i="31" onclick="go(31)"><span class="rail-ico">💰</span>付款</div><div class="rail-dot" data-i="32" onclick="go(32)" title="付款记录"></div><div class="rail-dot" data-i="33" onclick="go(33)" title="付款单详情"></div><div class="rail-dot" data-i="34" onclick="go(34)" title="批量付款"></div><div class="rail-dot" data-i="35" onclick="go(35)" title="单笔付款"></div><div class="rail-dot" data-i="36" onclick="go(36)" title="发起付款接口调用"></div><div class="rail-sep"></div><div class="rail-label" data-i="37" onclick="go(37)"><span class="rail-ico">⚙️</span>平台管理</div><div class="rail-label" data-i="38" onclick="go(38)"><span class="rail-ico">🌐</span>区域划分</div><div class="rail-label" data-i="39" onclick="go(39)"><span class="rail-ico">🏷️</span>业务属性</div><div class="rail-label" data-i="40" onclick="go(40)"><span class="rail-ico">👤</span>角色</div><div class="rail-label" data-i="41" onclick="go(41)"><span class="rail-ico">💳</span>账户</div><div class="rail-label" data-i="42" onclick="go(42)"><span class="rail-ico">📜</span>全局规则</div><div class="rail-label" data-i="43" onclick="go(43)"><span class="rail-ico">🏪</span>公司和门店编码生...</div><div class="rail-dot" data-i="44" onclick="go(44)" title="总部公司编码"></div><div class="rail-dot" data-i="45" onclick="go(45)" title="区域公司编码"></div><div class="rail-dot" data-i="46" onclick="go(46)" title="门店编码"></div><div class="rail-dot" data-i="47" onclick="go(47)" title="外部商户号（商户编码）"></div><div class="rail-sep"></div><div class="rail-label" data-i="48" onclick="go(48)"><span class="rail-ico">🔄</span>商户入驻状态</div><div class="rail-label" data-i="49" onclick="go(49)"><span class="rail-ico">📄</span>清算订单状态</div><div class="rail-dot" data-i="50" onclick="go(50)" title="POS机绑定状态"></div><div class="rail-sep"></div><div class="rail-label" data-i="51" onclick="go(51)"><span class="rail-ico">📦</span>清算批次号生成规...</div><div class="rail-label" data-i="52" onclick="go(52)"><span class="rail-ico">📁</span>清算文件状态</div><div class="rail-label" data-i="53" onclick="go(53)"><span class="rail-ico">📦</span>清算批次状态</div><div class="rail-label" data-i="54" onclick="go(54)"><span class="rail-ico">🔢</span>系统流水号</div><div class="rail-label" data-i="55" onclick="go(55)"><span class="rail-ico">📝</span>协议代扣</div><div class="rail-dot" data-i="56" onclick="go(56)" title="协议代扣申请单类型"></div><div class="rail-dot" data-i="57" onclick="go(57)" title="协议代扣申请单状态"></div><div class="rail-dot" data-i="58" onclick="go(58)" title="协议代扣合约状态"></div><div class="rail-sep"></div><div class="rail-label" data-i="59" onclick="go(59)"><span class="rail-ico">🔏</span>授权代付</div><div class="rail-dot" data-i="60" onclick="go(60)" title="授权代付业务子场景"></div><div class="rail-dot" data-i="61" onclick="go(61)" title="授权代付申请单类型"></div><div class="rail-dot" data-i="62" onclick="go(62)" title="授权代付申请单状态"></div><div class="rail-dot" data-i="63" onclick="go(63)" title="授权代付合约状态"></div><div class="rail-sep"></div><div class="rail-label" data-i="64" onclick="go(64)"><span class="rail-ico">🔒</span>银行卡号和手机号...</div><div class="rail-label" data-i="65" onclick="go(65)"><span class="rail-ico">💰</span>对外付款</div><div class="rail-dot" data-i="66" onclick="go(66)" title="业务流水号"></div><div class="rail-dot" data-i="67" onclick="go(67)" title="付款单状态"></div><div class="rail-dot" data-i="68" onclick="go(68)" title="批量付款批次状态"></div></nav>
 <div class="nav">
   <button class="nav-btn" onclick="prev()">◀</button>
-  <div class="dots"><div class="dot" onclick="go(0)"></div><div class="dot" onclick="go(1)"></div><div class="dot" onclick="go(2)"></div><div class="dot" onclick="go(3)"></div><div class="dot" onclick="go(4)"></div><div class="dot" onclick="go(5)"></div><div class="dot" onclick="go(6)"></div><div class="dot" onclick="go(7)"></div><div class="dot" onclick="go(8)"></div><div class="dot" onclick="go(9)"></div><div class="dot" onclick="go(10)"></div><div class="dot" onclick="go(11)"></div><div class="dot" onclick="go(12)"></div><div class="dot" onclick="go(13)"></div><div class="dot" onclick="go(14)"></div><div class="dot" onclick="go(15)"></div><div class="dot" onclick="go(16)"></div><div class="dot" onclick="go(17)"></div><div class="dot" onclick="go(18)"></div><div class="dot" onclick="go(19)"></div><div class="dot" onclick="go(20)"></div><div class="dot" onclick="go(21)"></div><div class="dot" onclick="go(22)"></div><div class="dot" onclick="go(23)"></div><div class="dot" onclick="go(24)"></div><div class="dot" onclick="go(25)"></div><div class="dot" onclick="go(26)"></div><div class="dot" onclick="go(27)"></div><div class="dot" onclick="go(28)"></div><div class="dot" onclick="go(29)"></div><div class="dot" onclick="go(30)"></div><div class="dot" onclick="go(31)"></div><div class="dot" onclick="go(32)"></div><div class="dot" onclick="go(33)"></div><div class="dot" onclick="go(34)"></div><div class="dot" onclick="go(35)"></div><div class="dot" onclick="go(36)"></div><div class="dot" onclick="go(37)"></div><div class="dot" onclick="go(38)"></div><div class="dot" onclick="go(39)"></div><div class="dot" onclick="go(40)"></div><div class="dot" onclick="go(41)"></div><div class="dot" onclick="go(42)"></div><div class="dot" onclick="go(43)"></div><div class="dot" onclick="go(44)"></div><div class="dot" onclick="go(45)"></div><div class="dot" onclick="go(46)"></div><div class="dot" onclick="go(47)"></div><div class="dot" onclick="go(48)"></div><div class="dot" onclick="go(49)"></div><div class="dot" onclick="go(50)"></div><div class="dot" onclick="go(51)"></div><div class="dot" onclick="go(52)"></div><div class="dot" onclick="go(53)"></div><div class="dot" onclick="go(54)"></div><div class="dot" onclick="go(55)"></div><div class="dot" onclick="go(56)"></div><div class="dot" onclick="go(57)"></div><div class="dot" onclick="go(58)"></div><div class="dot" onclick="go(59)"></div><div class="dot" onclick="go(60)"></div><div class="dot" onclick="go(61)"></div><div class="dot" onclick="go(62)"></div><div class="dot" onclick="go(63)"></div><div class="dot" onclick="go(64)"></div><div class="dot" onclick="go(65)"></div><div class="dot" onclick="go(66)"></div><div class="dot" onclick="go(67)"></div><div class="dot" onclick="go(68)"></div></div>
   <button class="nav-btn" onclick="next()">▶</button>
   <div class="counter">1 / 69</div>
 </div>
 <button class="fs-btn" onclick="toggleFS()" title="全屏 (F)">⛶</button>
-<div class="hint"><kbd>←</kbd> <kbd>→</kbd> 切换 &nbsp;<kbd>F</kbd> 全屏 &nbsp;<kbd>Home</kbd> <kbd>End</kbd> 首尾</div>
+<div class="hint"><kbd>←</kbd> <kbd>→</kbd> 切换 &nbsp;<kbd>F</kbd> 全屏</div>
 <script>
 let cur = 0, total = 0, lock = false;
 const $ = s => document.querySelector(s);
@@ -8024,10 +8026,7 @@ function go(i) {
   const body = slides[cur].querySelector('.slide-body');
   if (body) body.scrollTop = 0;
   upd();
-  setTimeout(() => {
-    slides[prev].classList.remove('exit');
-    lock = false;
-  }, 500);
+  setTimeout(() => { slides[prev].classList.remove('exit'); lock = false; }, 450);
 }
 
 function next() { go(cur + 1); }
@@ -8036,7 +8035,12 @@ function prev() { go(cur - 1); }
 function upd() {
   const pct = ((cur + 1) / total * 100).toFixed(1);
   $('.progress').style.width = pct + '%';
-  $$('.dot').forEach((d, i) => d.classList.toggle('on', i === cur));
+  $$('.rail-label, .rail-dot').forEach(d => {
+    d.classList.toggle('on', parseInt(d.dataset.i) === cur);
+  });
+  // Scroll rail to show current
+  const activeLabel = document.querySelector('.rail-label.on, .rail-dot.on');
+  if (activeLabel) activeLabel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   $('.counter').textContent = (cur + 1) + ' / ' + total;
 }
 
