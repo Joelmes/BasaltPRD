@@ -6,19 +6,16 @@
 <title>Basalt OS - 清算分账系统需求文档</title>
 <style>
 :root {
-  --bg: #faf8f5;
-  --card: #ffffff;
-  --text: #37352f;
-  --text2: #9b9488;
-  --accent: #c96442;
-  --accent2: #d98a6a;
-  --accent-bg: #fdf0ea;
-  --border: #e8e2da;
-  --heading: #1a1715;
-  --code-bg: #1c1917;
-  --code-text: #e8ddd3;
-  --chapter-bg: linear-gradient(160deg, #f5efe8 0%, #ede4d8 100%);
-  --part-bg: linear-gradient(160deg, #ede4d8 0%, #e2d5c5 100%);
+  --bg: #ffffff;
+  --primary: #0D2A8E;
+  --primary-light: #F0F4FF;
+  --card: #F7F7F7;
+  --text: #1a1a1a;
+  --text2: #666666;
+  --border: #EEEEEE;
+  --heading: #1a1a1a;
+  --code-bg: #1a1a1a;
+  --code-text: #f0f0f0;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --rail-w: 56px;
 }
@@ -34,18 +31,17 @@ body {
 /* ===== Progress ===== */
 .progress {
   position: fixed; top: 0; left: 0; height: 3px; z-index: 999;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  background: var(--primary);
   transition: width 0.35s var(--ease);
-  box-shadow: 0 0 10px rgba(201,100,66,0.25);
 }
 
 /* ===== Right Rail Nav ===== */
 .rail {
   position: fixed; right: 0; top: 0; bottom: 0; width: var(--rail-w);
-  background: rgba(255,255,255,0.6); backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.85); backdrop-filter: blur(8px);
   border-left: 1px solid var(--border);
   z-index: 200; display: flex; flex-direction: column;
-  padding: 60px 0 80px;
+  padding: 56px 0 80px;
   overflow-y: auto; overflow-x: hidden;
   scrollbar-width: none;
 }
@@ -56,13 +52,14 @@ body {
   font-size: 10px; font-weight: 600; color: var(--text2);
   padding: 8px 0; letter-spacing: 0.06em;
   text-transform: uppercase; white-space: nowrap;
-  cursor: pointer; transition: color 0.2s;
+  cursor: pointer; transition: color 0.15s;
   display: flex; align-items: center; gap: 4px;
   min-height: 32px; flex-shrink: 0;
   padding-left: 12px; padding-right: 12px;
+  border-left: 2px solid transparent;
 }
-.rail-label:hover { color: var(--accent); }
-.rail-label.on { color: var(--accent); font-weight: 700; }
+.rail-label:hover { color: var(--primary); }
+.rail-label.on { color: var(--primary); font-weight: 700; border-left-color: var(--primary); }
 
 .rail-label .rail-ico {
   writing-mode: horizontal-tb; font-size: 12px; flex-shrink: 0;
@@ -75,186 +72,198 @@ body {
 
 .rail-dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background: var(--border); flex-shrink: 0;
+  background: #d0d0d0; flex-shrink: 0;
   margin: 3px auto; cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
 }
-.rail-dot:hover { background: var(--accent2); }
-.rail-dot.on { background: var(--accent); transform: scale(1.4); }
+.rail-dot:hover { background: var(--primary); opacity: 0.5; }
+.rail-dot.on { background: var(--primary); transform: scale(1.5); }
 
 /* ===== Slide Shell ===== */
 .deck { width: calc(100vw - var(--rail-w)); height: 100vh; position: relative; }
 .slide {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 48px 56px;
-  opacity: 0; transform: translateY(20px);
-  transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
+  align-items: flex-start; justify-content: flex-start;
+  padding: 48px 64px;
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
   pointer-events: none; will-change: opacity, transform;
+  background: var(--bg);
 }
 .slide.active { opacity: 1; transform: translateY(0); pointer-events: all; }
-.slide.exit { opacity: 0; transform: translateY(-14px); }
+.slide.exit { opacity: 0; transform: translateY(-12px); }
 
 /* ===== Cover ===== */
-.slide.cover { background: var(--chapter-bg); }
+.slide.cover { background: #fff; justify-content: center; align-items: center; text-align: center; }
 .cover-badge {
-  display: inline-block; padding: 6px 16px; border-radius: 20px;
-  background: var(--accent-bg); color: var(--accent);
-  font-size: 13px; font-weight: 600; letter-spacing: 0.05em; margin-bottom: 24px;
+  display: inline-block; padding: 5px 14px; border-radius: 4px;
+  background: var(--primary); color: #fff;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; margin-bottom: 20px;
+  text-transform: uppercase;
 }
 .cover-title {
-  font-size: clamp(2.2em, 5vw, 3.8em); font-weight: 800;
-  color: var(--heading); letter-spacing: -0.03em; line-height: 1.15;
+  font-size: clamp(2.4em, 5.5vw, 4.2em); font-weight: 900;
+  color: var(--heading); letter-spacing: -0.04em; line-height: 1.1;
 }
 .cover-sub {
-  font-size: clamp(1em, 2vw, 1.35em); color: var(--accent);
-  font-weight: 500; margin-top: 8px; margin-bottom: 36px;
+  font-size: clamp(1em, 2vw, 1.4em); color: var(--text2);
+  font-weight: 500; margin-top: 12px; margin-bottom: 40px;
 }
 .cover-stats { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
 .stat-card {
-  background: var(--card); border-radius: 12px; padding: 18px 28px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.06); text-align: center;
-  min-width: 120px; border: 1px solid var(--border);
+  background: var(--card); border-radius: 0; padding: 20px 32px;
+  box-shadow: none; text-align: center;
+  min-width: 130px; border: 1px solid var(--border);
 }
-.stat-num { font-size: 2em; font-weight: 700; color: var(--accent); display: block; line-height: 1.1; }
-.stat-label { font-size: 0.82em; color: var(--text2); margin-top: 4px; }
+.stat-num { font-size: 2.2em; font-weight: 800; color: var(--primary); display: block; line-height: 1.1; }
+.stat-label { font-size: 0.8em; color: var(--text2); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
 
 /* ===== Part Divider ===== */
-.slide.part { background: var(--part-bg); align-items: flex-start; text-align: left; }
+.slide.part { background: var(--primary); align-items: flex-start; text-align: left; justify-content: center; padding-left: 80px; }
 .part-badge {
-  display: inline-block; padding: 5px 14px; border-radius: 6px;
-  background: var(--heading); color: #f5efe8;
-  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; margin-bottom: 16px;
+  display: inline-block; padding: 4px 12px; border-radius: 3px;
+  background: rgba(255,255,255,0.18); color: #fff;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em; margin-bottom: 18px;
+  text-transform: uppercase;
+}
+.part-num {
+  font-size: clamp(3em, 7vw, 5.5em); font-weight: 900;
+  color: rgba(255,255,255,0.12); letter-spacing: -0.02em;
+  line-height: 1; position: absolute; right: 60px; bottom: 40px;
 }
 .part-title {
-  font-size: clamp(1.6em, 3.5vw, 2.8em); font-weight: 800;
-  color: var(--heading); letter-spacing: -0.02em; line-height: 1.2; text-align: left;
+  font-size: clamp(1.8em, 4vw, 3em); font-weight: 800;
+  color: #fff; letter-spacing: -0.02em; line-height: 1.15; text-align: left;
+  max-width: 600px;
 }
 .part-desc {
-  font-size: 0.95em; color: var(--text2); margin-top: 12px;
+  font-size: 0.95em; color: rgba(255,255,255,0.7); margin-top: 14px;
   max-width: 600px; text-align: left; line-height: 1.7;
 }
 
 /* ===== Chapter Divider ===== */
-.slide.chapter { background: var(--chapter-bg); }
-.chapter-icon { font-size: 2.8em; margin-bottom: 12px; }
+.slide.chapter { background: #fff; align-items: flex-start; text-align: left; padding-top: 80px; }
+.chapter-icon { font-size: 2.4em; margin-bottom: 16px; }
 .chapter-num {
-  font-size: 0.8em; font-weight: 700; color: var(--accent);
-  text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px;
+  font-size: 3.5em; font-weight: 900; color: var(--primary);
+  letter-spacing: -0.02em; line-height: 1;
+  opacity: 0.15; position: absolute; right: 60px; top: 40px;
 }
 .chapter-title {
-  font-size: clamp(1.5em, 3.5vw, 2.6em); font-weight: 800;
-  color: var(--heading); letter-spacing: -0.02em; line-height: 1.2;
+  font-size: clamp(1.6em, 3.5vw, 2.8em); font-weight: 800;
+  color: var(--heading); letter-spacing: -0.03em; line-height: 1.15;
+  text-align: left; max-width: 650px;
 }
 
 /* ===== Content Slide ===== */
-.slide.content { justify-content: flex-start; padding-top: 56px; }
-.slide-inner { max-width: 1060px; width: 100%; }
+.slide.content { justify-content: flex-start; padding-top: 64px; }
+.slide-inner { max-width: 1100px; width: 100%; }
 .slide-head {
-  display: flex; align-items: center; gap: 14px;
-  margin-bottom: 18px; padding-bottom: 12px;
-  border-bottom: 2px solid var(--border);
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 20px; padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
 }
 .head-icon {
-  font-size: 1.5em; width: 44px; height: 44px;
+  font-size: 1.4em; width: 40px; height: 40px;
   display: flex; align-items: center; justify-content: center;
-  background: var(--accent-bg); border-radius: 10px; flex-shrink: 0;
+  background: var(--primary-light); border-radius: 6px; flex-shrink: 0;
+  color: var(--primary);
 }
-.head-title { font-size: 1.4em; font-weight: 700; color: var(--heading); }
-.head-breadcrumb { font-size: 0.78em; color: var(--text2); margin-top: 2px; }
+.head-title { font-size: 1.5em; font-weight: 800; color: var(--heading); letter-spacing: -0.02em; }
+.head-breadcrumb { font-size: 0.75em; color: var(--text2); margin-top: 3px; letter-spacing: 0.02em; }
 
 .slide-body {
   flex: 1; overflow-y: auto; padding-right: 8px;
-  max-height: calc(100vh - 160px);
-  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  max-height: calc(100vh - 170px);
+  scrollbar-width: thin; scrollbar-color: #d0d0d0 transparent;
 }
-.slide-body::-webkit-scrollbar { width: 4px; }
+.slide-body::-webkit-scrollbar { width: 3px; }
 .slide-body::-webkit-scrollbar-track { background: transparent; }
-.slide-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.slide-body::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 2px; }
 
 /* ===== Content Typography ===== */
-.slide-body p { margin: 10px 0; line-height: 1.85; color: #444; font-size: 14.5px; }
-.slide-body ul, .slide-body ol { padding-left: 22px; margin: 8px 0; }
-.slide-body li { margin: 5px 0; line-height: 1.75; color: #444; font-size: 14px; }
+.slide-body p { margin: 10px 0; line-height: 1.8; color: var(--text); font-size: 14.5px; }
+.slide-body ul, .slide-body ol { padding-left: 20px; margin: 8px 0; }
+.slide-body li { margin: 5px 0; line-height: 1.7; color: var(--text); font-size: 14px; }
 .slide-body li > ul, .slide-body li > ol { margin: 3px 0; }
 .slide-body h4 {
-  font-size: 1.05em; font-weight: 600; color: var(--heading);
-  margin: 18px 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  font-size: 1.05em; font-weight: 700; color: var(--heading);
+  margin: 16px 0 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
 }
 .slide-body table {
   width: 100%; border-collapse: collapse; margin: 14px 0;
-  font-size: 13.5px; border-radius: 8px; overflow: hidden;
-  border: 1px solid var(--border);
+  font-size: 13.5px; border: 1px solid var(--border);
 }
 .slide-body th {
-  background: #f3ede6; font-weight: 600; color: #3d3530;
-  padding: 9px 12px; text-align: left; border-bottom: 2px solid var(--border);
-  font-size: 13px;
+  background: var(--primary); color: #fff;
+  padding: 10px 14px; text-align: left; font-weight: 700;
+  font-size: 13px; letter-spacing: 0.02em;
 }
-.slide-body td { padding: 7px 12px; border-bottom: 1px solid #f0ebe4; vertical-align: top; font-size: 13px; }
-.slide-body tr:nth-child(even) td { background: #fdfcfa; }
-.slide-body tr:hover td { background: var(--accent-bg); }
+.slide-body td { padding: 8px 14px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 13px; }
+.slide-body tr:nth-child(even) td { background: var(--card); }
+.slide-body tr:hover td { background: var(--primary-light); }
 .slide-body code {
   font-family: "JetBrains Mono", "Fira Code", "SF Mono", Menlo, Consolas, monospace;
-  background: #f3ede6; color: #9a4c2e; padding: 1px 6px; border-radius: 4px;
-  font-size: 0.87em; font-weight: 500;
+  background: var(--primary-light); color: var(--primary); padding: 1px 6px; border-radius: 3px;
+  font-size: 0.87em; font-weight: 600;
 }
 .slide-body pre {
-  background: var(--code-bg); color: var(--code-text);
-  border-radius: 10px; padding: 16px 20px; margin: 14px 0;
+  background: #1a1a2e; color: #e0e0e0;
+  border-radius: 6px; padding: 18px 22px; margin: 14px 0;
   overflow-x: auto; font-size: 13px; line-height: 1.65;
-  border: 1px solid #2a2725;
+  border: 1px solid #2a2a40;
 }
 .slide-body pre code { background: none; color: inherit; padding: 0; border-radius: 0; font-size: inherit; font-weight: 400; }
 .slide-body blockquote {
-  border-left: 4px solid var(--accent); margin: 12px 0;
-  padding: 10px 16px; background: var(--accent-bg);
-  border-radius: 0 8px 8px 0; color: #5c4f45; font-size: 14px;
+  border-left: 3px solid var(--primary); margin: 12px 0;
+  padding: 10px 16px; background: var(--primary-light);
+  border-radius: 0 4px 4px 0; color: var(--text); font-size: 14px;
 }
-.slide-body a { color: var(--accent); text-decoration: none; }
+.slide-body a { color: var(--primary); text-decoration: none; }
 .slide-body a:hover { text-decoration: underline; }
-.slide-body strong { font-weight: 600; color: #2a2320; }
+.slide-body strong { font-weight: 700; color: var(--heading); }
 .slide-body hr { border: none; height: 1px; background: var(--border); margin: 18px 0; }
 .slide-body del { color: #aaa; text-decoration: line-through; }
 
 /* ===== TOC Slide ===== */
 .toc-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px; margin-top: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px; margin-top: 20px;
 }
 .toc-card {
-  display: flex; align-items: center; gap: 10px;
-  padding: 12px 14px; background: var(--card);
-  border-radius: 10px; border: 1px solid var(--border);
-  cursor: pointer; transition: all 0.2s; text-decoration: none; color: var(--text);
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; background: var(--card);
+  border-radius: 0; border: 1px solid var(--border);
+  cursor: pointer; transition: all 0.15s; text-decoration: none; color: var(--text);
 }
-.toc-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.toc-card:hover { border-color: var(--primary); background: var(--primary-light); }
 .toc-card-icon {
-  font-size: 1.2em; width: 32px; height: 32px;
+  font-size: 1.2em; width: 36px; height: 36px;
   display: flex; align-items: center; justify-content: center;
-  background: var(--accent-bg); border-radius: 8px; flex-shrink: 0;
+  background: var(--primary-light); border-radius: 4px; flex-shrink: 0;
+  color: var(--primary);
 }
-.toc-card-text { font-size: 13px; font-weight: 500; color: var(--heading); }
+.toc-card-text { font-size: 13.5px; font-weight: 600; color: var(--heading); }
 
 /* ===== Bottom Nav ===== */
 .nav {
   position: fixed; bottom: 20px; left: calc((100vw - var(--rail-w))/2);
   transform: translateX(-50%);
   display: flex; align-items: center; gap: 8px; z-index: 100;
-  background: rgba(255,255,255,0.88); backdrop-filter: blur(14px);
-  padding: 6px 16px; border-radius: 40px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid var(--border);
+  background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
+  padding: 6px 18px; border-radius: 0;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06); border-top: 1px solid var(--border);
 }
 .nav-btn {
-  width: 32px; height: 32px; border-radius: 50%;
-  border: 1px solid var(--border); background: var(--card);
+  width: 32px; height: 32px; border-radius: 0;
+  border: 1px solid var(--border); background: #fff;
   color: var(--text); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   font-size: 13px; transition: all 0.15s;
 }
-.nav-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.nav-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
 .counter {
   font-size: 12px; color: var(--text2); min-width: 48px;
   text-align: center; font-variant-numeric: tabular-nums;
@@ -263,29 +272,27 @@ body {
 /* ===== FS / Hint ===== */
 .fs-btn {
   position: fixed; top: 12px; right: calc(var(--rail-w) + 12px);
-  width: 32px; height: 32px; border-radius: 8px;
-  border: 1px solid var(--border); background: rgba(255,255,255,0.8);
-  backdrop-filter: blur(8px); color: var(--text2); cursor: pointer;
+  width: 32px; height: 32px; border-radius: 4px;
+  border: 1px solid var(--border); background: rgba(255,255,255,0.9);
+  color: var(--text2); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   font-size: 14px; z-index: 100; transition: all 0.15s;
 }
-.fs-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.fs-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
 
 .hint {
   position: fixed; bottom: 60px; left: calc((100vw - var(--rail-w))/2);
-  transform: translateX(-50%); font-size: 11px; color: #c0b8ae;
+  transform: translateX(-50%); font-size: 11px; color: #999;
   z-index: 100; pointer-events: none; animation: hintFade 4s forwards;
 }
 .hint kbd {
-  display: inline-block; padding: 1px 6px; background: #f0ebe4;
-  border-radius: 3px; border: 1px solid #ddd; font-size: 10px;
+  display: inline-block; padding: 1px 6px; background: #f0f0f0;
+  border-radius: 2px; border: 1px solid #ddd; font-size: 10px;
 }
 @keyframes hintFade { 0%,70%{opacity:1} 100%{opacity:0} }
 
 /* ===== Decorative ===== */
-.deco { position: absolute; border-radius: 50%; opacity: 0.05; pointer-events: none; }
-.deco-a { width: 340px; height: 340px; background: var(--accent); top: -80px; right: -80px; }
-.deco-b { width: 240px; height: 240px; background: #8b6f5e; bottom: -50px; left: -50px; }
+.deco { display: none; }
 
 /* ===== Mobile ===== */
 @media (max-width: 768px) {
@@ -293,11 +300,12 @@ body {
   .rail { display: none; }
   .slide { padding: 20px; }
   .slide.content { padding-top: 44px; }
+  .slide.part { padding-left: 24px; }
   .cover-title { font-size: 2em; }
   .chapter-title, .part-title { font-size: 1.5em; }
   .head-title { font-size: 1.1em; }
   .stat-card { min-width: 90px; padding: 12px; }
-  .toc-grid { grid-template-columns: 1fr 1fr; }
+  .toc-grid { grid-template-columns: 1fr; }
   .slide-body { max-height: calc(100vh - 130px); }
   .nav { bottom: 10px; padding: 4px 10px; }
   .fs-btn { right: 12px; }
@@ -312,7 +320,6 @@ body {
 <body>
 <div class="progress" style="width:0"></div>
 <div class="deck"><div class="slide cover">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:center">
     <div class="cover-badge">PRODUCT REQUIREMENTS</div>
     <div class="cover-title">Basalt OS</div>
@@ -320,7 +327,6 @@ body {
   </div>
 </div>
 <div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:left; padding-left: 48px;">
     <div class="chapter-icon">📑</div>
     <div class="chapter-num">CONTENTS</div>
@@ -416,18 +422,16 @@ body {
   </div>
 </div>
 <div class="slide part">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
   <div class="slide-inner" style="text-align:left; padding-left: 48px;">
     <div class="part-badge">PART 01</div>
     <div class="part-title">清算分账</div>
     <div class="part-desc">本文档需配合产品原型阅读。原型：CoDesign：https://codesign.qq.com/s/671147766598162AxHub：https://axhub.im/ax9/71215a188e6b6ee5本文档仅描述产品原型中关键功能的逻辑和规则，详细功能列表、功能优先级、归属版本迭代等以Basalt_Finance开发看板为准。包含版本迭代：版本与需求管理详见Basalt_Fina</div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">🏦</div>
-    <div class="chapter-num">SECTION 01</div>
     <div class="chapter-title">品牌专户</div>
+    <div class="chapter-num">SECTION 01</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
@@ -593,11 +597,10 @@ body {
 </ol></div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">🏢</div>
-    <div class="chapter-num">SECTION 02</div>
     <div class="chapter-title">总部公司</div>
+    <div class="chapter-num">SECTION 02</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
@@ -1321,11 +1324,10 @@ body {
 </ol></div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">🗺️</div>
-    <div class="chapter-num">SECTION 03</div>
     <div class="chapter-title">区域公司</div>
+    <div class="chapter-num">SECTION 03</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
@@ -2015,11 +2017,10 @@ body {
 </ol></div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">🏪</div>
-    <div class="chapter-num">SECTION 04</div>
     <div class="chapter-title">门店</div>
+    <div class="chapter-num">SECTION 04</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
@@ -2664,25 +2665,22 @@ body {
 </ol></div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">🚚</div>
-    <div class="chapter-num">SECTION 05</div>
     <div class="chapter-title">供应商</div>
+    <div class="chapter-num">SECTION 05</div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">📄</div>
-    <div class="chapter-num">SECTION 06</div>
     <div class="chapter-title">清算订单（三联）</div>
+    <div class="chapter-num">SECTION 06</div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">📄</div>
-    <div class="chapter-num">SECTION 07</div>
     <div class="chapter-title">清算订单（收钱吧）</div>
+    <div class="chapter-num">SECTION 07</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
@@ -3583,18 +3581,16 @@ body {
 </ol></div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">📁</div>
-    <div class="chapter-num">SECTION 08</div>
     <div class="chapter-title">清算文件</div>
+    <div class="chapter-num">SECTION 08</div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">📦</div>
-    <div class="chapter-num">SECTION 09</div>
     <div class="chapter-title">清算批次</div>
+    <div class="chapter-num">SECTION 09</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
@@ -3984,11 +3980,10 @@ body {
 </ol></div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">🔐</div>
-    <div class="chapter-num">SECTION 10</div>
     <div class="chapter-title">签约授权</div>
+    <div class="chapter-num">SECTION 10</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
@@ -5636,11 +5631,10 @@ body {
 </ol></div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">💰</div>
-    <div class="chapter-num">SECTION 11</div>
     <div class="chapter-title">付款</div>
+    <div class="chapter-num">SECTION 11</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
@@ -6978,53 +6972,46 @@ body {
 </table></div>
   </div>
 </div><div class="slide part">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px;">
     <div class="part-badge">PART 02</div>
     <div class="part-title">平台管理</div>
-    
+    <div class="part-num">02</div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">🌐</div>
-    <div class="chapter-num">SECTION 12</div>
     <div class="chapter-title">区域划分</div>
+    <div class="chapter-num">SECTION 12</div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">🏷️</div>
-    <div class="chapter-num">SECTION 13</div>
     <div class="chapter-title">业务属性</div>
+    <div class="chapter-num">SECTION 13</div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">👤</div>
-    <div class="chapter-num">SECTION 14</div>
     <div class="chapter-title">角色</div>
+    <div class="chapter-num">SECTION 14</div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">💳</div>
-    <div class="chapter-num">SECTION 15</div>
     <div class="chapter-title">账户</div>
+    <div class="chapter-num">SECTION 15</div>
   </div>
 </div><div class="slide part">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px;">
     <div class="part-badge">PART 03</div>
     <div class="part-title">全局规则</div>
-    
+    <div class="part-num">03</div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">🏪</div>
-    <div class="chapter-num">SECTION 16</div>
     <div class="chapter-title">公司和门店编码生成规则</div>
+    <div class="chapter-num">SECTION 16</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
@@ -7173,18 +7160,16 @@ body {
 </ol></div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">🔄</div>
-    <div class="chapter-num">SECTION 17</div>
     <div class="chapter-title">商户入驻状态</div>
+    <div class="chapter-num">SECTION 17</div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">📄</div>
-    <div class="chapter-num">SECTION 18</div>
     <div class="chapter-title">清算订单状态</div>
+    <div class="chapter-num">SECTION 18</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
@@ -7213,39 +7198,34 @@ body {
 </ol></div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">📦</div>
-    <div class="chapter-num">SECTION 19</div>
     <div class="chapter-title">清算批次号生成规则</div>
+    <div class="chapter-num">SECTION 19</div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">📁</div>
-    <div class="chapter-num">SECTION 20</div>
     <div class="chapter-title">清算文件状态</div>
+    <div class="chapter-num">SECTION 20</div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">📦</div>
-    <div class="chapter-num">SECTION 21</div>
     <div class="chapter-title">清算批次状态</div>
+    <div class="chapter-num">SECTION 21</div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">🔢</div>
-    <div class="chapter-num">SECTION 22</div>
     <div class="chapter-title">系统流水号</div>
+    <div class="chapter-num">SECTION 22</div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">📝</div>
-    <div class="chapter-num">SECTION 23</div>
     <div class="chapter-title">协议代扣</div>
+    <div class="chapter-num">SECTION 23</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
@@ -7454,11 +7434,10 @@ body {
 </ol></div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">🔏</div>
-    <div class="chapter-num">SECTION 24</div>
     <div class="chapter-title">授权代付</div>
+    <div class="chapter-num">SECTION 24</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
@@ -7713,18 +7692,16 @@ body {
 </ol></div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">🔒</div>
-    <div class="chapter-num">SECTION 25</div>
     <div class="chapter-title">银行卡号和手机号脱敏规则</div>
+    <div class="chapter-num">SECTION 25</div>
   </div>
 </div><div class="slide chapter">
-  <div class="deco deco-a"></div><div class="deco deco-b"></div>
-  <div class="slide-inner" style="text-align:left; padding-left: 48px;">
+  <div class="slide-inner" style="text-align:left; padding-left: 80px; padding-top: 80px;">
     <div class="chapter-icon">💰</div>
-    <div class="chapter-num">SECTION 26</div>
     <div class="chapter-title">对外付款</div>
+    <div class="chapter-num">SECTION 26</div>
   </div>
 </div><div class="slide content">
   <div class="slide-inner">
